@@ -760,16 +760,20 @@ async function onAddNote(e) {
   if (!txt) return;
   const note = { force, type, note: txt, priority: prio, respondent_name: state.user.name };
   if (state.mode === "supabase") {
-    const { data, error } = await state.supabase.from("external_notes").insert({
+    // Can't .select().single() here — anon is blocked from SELECTing external_notes
+    // by RLS. Insert only, then reload via RPC to refresh the local list.
+    const { error } = await state.supabase.from("external_notes").insert({
       assessment_id: state.assessmentId,
       respondent_name: state.user.name,
       force_category: force,
       note_type: type,
       note: txt,
       priority: prio
-    }).select().single();
+    });
     if (error) return alert(error.message);
-    state.externalNotes.push(data);
+    input.value = "";
+    await loadMyExternal();
+    return;
   } else {
     state.externalNotes.push(note);
     localStorage.setItem("bmc_swot_external_" + (state.assessmentId||"local"), JSON.stringify(state.externalNotes));
