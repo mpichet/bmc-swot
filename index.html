@@ -26,6 +26,8 @@
     position: absolute; inset: 0; background: rgba(255,255,255,0.5);
     pointer-events: all; cursor: not-allowed; border-radius: .5rem;
   }
+  .lang-btn { padding: 2px 8px; font-size: 11px; border-radius: 4px; border: 1px solid #e5e7eb; }
+  .lang-btn.active { background: #0f172a; color: white; border-color: #0f172a; }
   @media print {
     .no-print { display: none !important; }
     .block-card { page-break-inside: avoid; }
@@ -39,16 +41,22 @@
     <div class="flex items-center gap-3">
       <div class="w-9 h-9 rounded-md bg-slate-900 text-white grid place-items-center font-bold">BM</div>
       <div>
-        <div class="font-semibold leading-tight">Business Model Canvas — SWOT Assessment</div>
-        <div class="text-xs text-slate-500">After Osterwalder &amp; Pigneur, <em>Business Model Generation</em> (2010)</div>
+        <div class="font-semibold leading-tight" data-i18n="app.title">Business Model Canvas — SWOT Assessment</div>
+        <div class="text-xs text-slate-500" data-i18n="app.subtitle">After Osterwalder &amp; Pigneur, <em>Business Model Generation</em> (2010)</div>
       </div>
     </div>
-    <nav class="flex gap-1 no-print">
-      <button data-view="setup"      class="nav-btn px-3 py-1.5 rounded text-sm">Setup</button>
-      <button data-view="assess"     class="nav-btn px-3 py-1.5 rounded text-sm">Assess</button>
-      <button data-view="external"   class="nav-btn px-3 py-1.5 rounded text-sm">External SWOT</button>
-      <button data-view="dashboard"  id="navDashboard" class="nav-btn px-3 py-1.5 rounded text-sm hidden">Dashboard</button>
-    </nav>
+    <div class="flex items-center gap-3">
+      <div class="flex gap-1 no-print" id="langToggle">
+        <button class="lang-btn" data-lang="en" type="button">EN</button>
+        <button class="lang-btn" data-lang="fr" type="button">FR</button>
+      </div>
+      <nav class="flex gap-1 no-print">
+        <button data-view="setup"      class="nav-btn px-3 py-1.5 rounded text-sm" data-i18n="nav.setup">Setup</button>
+        <button data-view="assess"     class="nav-btn px-3 py-1.5 rounded text-sm" data-i18n="nav.assess">Assess</button>
+        <button data-view="external"   class="nav-btn px-3 py-1.5 rounded text-sm" data-i18n="nav.external">External SWOT</button>
+        <button data-view="dashboard"  id="navDashboard" class="nav-btn px-3 py-1.5 rounded text-sm hidden" data-i18n="nav.dashboard">Dashboard</button>
+      </nav>
+    </div>
   </div>
   <div id="bannerModeRow" class="max-w-6xl mx-auto px-4 pb-2 text-xs flex items-center gap-3 flex-wrap"></div>
 </header>
@@ -57,47 +65,47 @@
 
   <!-- SETUP VIEW -->
   <section id="view-setup" class="view">
-    <h1 class="text-2xl font-bold mb-1">Welcome</h1>
-    <p class="text-slate-600 mb-6">Configure your session. Everyone on your exec team opens this same page and fills it in; results aggregate live in the Dashboard.</p>
+    <h1 class="text-2xl font-bold mb-1" data-i18n="setup.welcome">Welcome</h1>
+    <p class="text-slate-600 mb-6" data-i18n="setup.intro">Configure your session. Everyone on your exec team opens this same page and fills it in; results aggregate live in the Dashboard.</p>
 
     <div class="grid md:grid-cols-2 gap-6">
       <div class="bg-white border border-slate-200 rounded-lg p-5">
-        <h2 class="font-semibold mb-3">1. You</h2>
-        <label class="block text-sm font-medium">Your name</label>
+        <h2 class="font-semibold mb-3" data-i18n="setup.you">1. You</h2>
+        <label class="block text-sm font-medium" for="userName" data-i18n="setup.yourName">Your name</label>
         <input id="userName" class="w-full border rounded px-3 py-2 text-sm" placeholder="John Smith">
-        <label class="block text-sm font-medium mt-3">Role (optional)</label>
-        <input id="userRole" class="w-full border rounded px-3 py-2 text-sm" placeholder="e.g. CEO">
-        <p class="text-xs text-slate-500 mt-3">
+        <label class="block text-sm font-medium mt-3" for="userRole" data-i18n="setup.role">Role (optional)</label>
+        <input id="userRole" class="w-full border rounded px-3 py-2 text-sm" data-i18n-placeholder="setup.rolePlaceholder" placeholder="e.g. CEO">
+        <p class="text-xs text-slate-500 mt-3" data-i18n="setup.nameHint">
           You're identified by an anonymous token stored in this browser — not by your typed name. Two people can type the same name without overwriting each other.
         </p>
       </div>
 
       <div class="bg-white border border-slate-200 rounded-lg p-5">
-        <h2 class="font-semibold mb-3">2. Assessment session</h2>
-        <label class="block text-sm font-medium">Select or create a session</label>
+        <h2 class="font-semibold mb-3" data-i18n="setup.session">2. Assessment session</h2>
+        <label class="block text-sm font-medium" for="assessmentSelect" data-i18n="setup.selectCreate">Select or create a session</label>
         <div class="flex gap-2 mt-1">
           <select id="assessmentSelect" class="w-full border rounded px-2 py-2 text-sm"></select>
-          <button id="refreshAssessments" class="text-sm px-3 py-2 rounded border" title="Refresh list">↻</button>
+          <button id="refreshAssessments" class="text-sm px-3 py-2 rounded border" data-i18n-title="setup.refreshList" title="Refresh list">↻</button>
         </div>
         <div class="flex gap-2 mt-2">
-          <input id="newAssessmentName" class="flex-1 border rounded px-3 py-2 text-sm" placeholder="New session name, e.g. Q2 2026 review">
-          <button id="createAssessment" class="bg-slate-900 text-white text-sm px-3 py-2 rounded">Create</button>
+          <input id="newAssessmentName" class="flex-1 border rounded px-3 py-2 text-sm" data-i18n-placeholder="setup.newSessionPlaceholder" placeholder="New session name, e.g. Q2 2026 review">
+          <button id="createAssessment" class="bg-slate-900 text-white text-sm px-3 py-2 rounded" data-i18n="setup.create">Create</button>
         </div>
-        <button id="saveUserGo" class="mt-5 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded">Save &amp; begin assessment →</button>
+        <button id="saveUserGo" class="mt-5 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded" data-i18n="setup.beginBtn">Save &amp; begin assessment →</button>
       </div>
     </div>
 
     <details class="mt-4 bg-white border border-slate-200 rounded-lg p-4 text-sm">
-      <summary class="font-semibold">Session owner? Unlock dashboard on this device</summary>
-      <p class="text-slate-600 mt-2 text-xs">Respondents: ignore this section — you don't need an owner key to answer. It's only for the person who <em>created</em> the session and wants to see the compiled dashboard on a new browser or device.</p>
+      <summary class="font-semibold" data-i18n="setup.ownerPanel">Session owner? Unlock dashboard on this device</summary>
+      <p class="text-slate-600 mt-2 text-xs" data-i18n="setup.ownerHelp">Respondents: ignore this section — you don't need an owner key to answer. It's only for the person who <em>created</em> the session and wants to see the compiled dashboard on a new browser or device.</p>
       <ol class="text-xs text-slate-600 list-decimal ml-4 mt-2 mb-3 space-y-1">
-        <li>Pick the session from the dropdown above.</li>
-        <li>Paste the owner key you saved when you created it.</li>
-        <li>Click <b>Unlock</b>. The Dashboard tab will appear.</li>
+        <li data-i18n="setup.ownerStep1">Pick the session from the dropdown above.</li>
+        <li data-i18n="setup.ownerStep2">Paste the owner key you saved when you created it.</li>
+        <li data-i18n="setup.ownerStep3">Click <b>Unlock</b>. The Dashboard tab will appear.</li>
       </ol>
       <div class="flex gap-2">
-        <input id="ownerKeyInput" class="flex-1 border rounded px-2 py-1 text-xs font-mono" placeholder="Paste owner key…">
-        <button id="saveOwnerKey" class="text-xs px-3 py-1 rounded border bg-slate-900 text-white">Unlock</button>
+        <input id="ownerKeyInput" class="flex-1 border rounded px-2 py-1 text-xs font-mono" data-i18n-placeholder="setup.ownerKeyPlaceholder" placeholder="Paste owner key…">
+        <button id="saveOwnerKey" class="text-xs px-3 py-1 rounded border bg-slate-900 text-white" data-i18n="setup.unlock">Unlock</button>
       </div>
     </details>
 
@@ -107,8 +115,8 @@
   <section id="view-assess" class="view hidden">
     <div class="flex items-end justify-between mb-4 flex-wrap gap-2">
       <div>
-        <h1 class="text-2xl font-bold">SWOT assessment — 9 building blocks</h1>
-        <p class="text-slate-600 text-sm">For each statement, click a dot 1→5 to reflect how strongly it applies to your business today. Green dots = strengths (+), red dots = weaknesses (−). Click the same dot again to clear.</p>
+        <h1 class="text-2xl font-bold" data-i18n="assess.title">SWOT assessment — 9 building blocks</h1>
+        <p class="text-slate-600 text-sm" data-i18n="assess.intro">For each statement, click a dot 1→5 to reflect how strongly it applies to your business today. Green dots = strengths (+), red dots = weaknesses (−). Click the same dot again to clear.</p>
       </div>
       <div class="text-right">
         <div id="progressLabel" class="text-sm text-slate-500"></div>
@@ -119,24 +127,15 @@
     <div id="assessContainer" class="grid md:grid-cols-2 gap-5 relative"></div>
 
     <div class="mt-6 flex justify-between items-center no-print">
-      <button class="nav-btn-link text-sm underline" data-view="setup">← Back to setup</button>
-      <button class="nav-btn-link bg-slate-900 text-white text-sm px-4 py-2 rounded" data-view="external">Next: External SWOT →</button>
+      <button class="nav-btn-link text-sm underline" data-view="setup" data-i18n="assess.backSetup">← Back to setup</button>
+      <button class="nav-btn-link bg-slate-900 text-white text-sm px-4 py-2 rounded" data-view="external" data-i18n="assess.nextExternal">Next: External SWOT →</button>
     </div>
   </section>
 
   <!-- EXTERNAL VIEW -->
   <section id="view-external" class="view hidden">
-    <h1 class="text-2xl font-bold">Environmental scan — Opportunities &amp; Threats</h1>
-    <div class="bg-sky-50 border border-sky-200 text-sky-900 rounded p-4 text-sm mb-5">
-      <p class="mb-2"><b>What this is.</b> A classic SWOT has four quadrants. The 9-block rating you just did gives you the <b>S</b>trengths and <b>W</b>eaknesses — an internal x-ray of your business model. This tab is for the other half: <b>O</b>pportunities and <b>T</b>hreats, which come from <em>outside</em> your business.</p>
-      <p class="mb-2">Osterwalder &amp; Pigneur structure that external view around four "forces" that surround the Canvas (pp. 200–211). Go through each one and list things you'd want the team to act on (opportunities) or watch for (threats), with a 1–5 priority.</p>
-      <ul class="list-disc ml-5 text-xs text-sky-900/90">
-        <li><b>Market forces</b> — shifts in customer needs, new segments emerging, switching costs changing, revenue attractiveness.</li>
-        <li><b>Industry forces</b> — competitor moves, new entrants, substitute offerings, supplier/value-chain dynamics, stakeholders.</li>
-        <li><b>Key trends</b> — technology, regulatory, societal/cultural, socioeconomic.</li>
-        <li><b>Macroeconomic forces</b> — global conditions, capital markets, commodity prices, economic infrastructure.</li>
-      </ul>
-    </div>
+    <h1 class="text-2xl font-bold" data-i18n="external.title">Environmental scan — Opportunities &amp; Threats</h1>
+    <div class="bg-sky-50 border border-sky-200 text-sky-900 rounded p-4 text-sm mb-5" id="externalHelpBox"></div>
     <div id="externalContainer" class="grid md:grid-cols-2 gap-5 relative"></div>
 
     <!-- Submit panel -->
@@ -146,14 +145,14 @@
         <p class="text-sm text-slate-600" id="submitHelp">Once you submit, your answers are locked in and the session owner sees them as "complete". You can unsubmit to edit again.</p>
       </div>
       <div class="flex gap-2 no-print">
-        <button id="unsubmitBtn" class="hidden text-sm px-4 py-2 rounded border">Unsubmit &amp; edit</button>
-        <button id="submitBtn"   class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded">Submit my assessment</button>
+        <button id="unsubmitBtn" class="hidden text-sm px-4 py-2 rounded border" data-i18n="submit.unsubmitBtn">Unsubmit &amp; edit</button>
+        <button id="submitBtn"   class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded" data-i18n="submit.submitBtn">Submit my assessment</button>
       </div>
     </div>
 
     <div class="mt-6 flex justify-between items-center no-print">
-      <button class="nav-btn-link text-sm underline" data-view="assess">← Back to blocks</button>
-      <button class="nav-btn-link bg-slate-900 text-white text-sm px-4 py-2 rounded" data-view="dashboard">See compiled dashboard →</button>
+      <button class="nav-btn-link text-sm underline" data-view="assess" data-i18n="external.backBlocks">← Back to blocks</button>
+      <button class="nav-btn-link bg-slate-900 text-white text-sm px-4 py-2 rounded" data-view="dashboard" data-i18n="external.seeDashboard">See compiled dashboard →</button>
     </div>
   </section>
 
@@ -161,216 +160,686 @@
   <section id="view-dashboard" class="view hidden">
     <div class="flex items-end justify-between mb-4 flex-wrap gap-2">
       <div>
-        <h1 class="text-2xl font-bold">Compiled dashboard</h1>
+        <h1 class="text-2xl font-bold" data-i18n="dash.title">Compiled dashboard</h1>
         <p id="dashSubtitle" class="text-slate-600 text-sm"></p>
       </div>
       <div class="flex gap-2 no-print">
-        <button id="refreshDash"   class="text-sm px-3 py-2 rounded border">↻ Refresh</button>
-        <button id="exportCsv"     class="text-sm px-3 py-2 rounded border">Export CSV</button>
-        <button id="exportJson"    class="text-sm px-3 py-2 rounded border">Export JSON</button>
-        <button onclick="window.print()" class="text-sm px-3 py-2 rounded border">Print</button>
+        <button id="refreshDash"   class="text-sm px-3 py-2 rounded border" data-i18n="dash.refresh">↻ Refresh</button>
+        <button id="exportCsv"     class="text-sm px-3 py-2 rounded border" data-i18n="dash.exportCsv">Export CSV</button>
+        <button id="exportJson"    class="text-sm px-3 py-2 rounded border" data-i18n="dash.exportJson">Export JSON</button>
+        <button id="printDash"     class="text-sm px-3 py-2 rounded border" data-i18n="dash.print">Print</button>
       </div>
     </div>
 
-    <!-- Executive summary strip -->
     <div id="dashSummary" class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6"></div>
 
     <div class="bg-white border border-slate-200 rounded-lg p-4 mb-6">
-      <h2 class="font-semibold mb-2">Respondents</h2>
+      <h2 class="font-semibold mb-2" data-i18n="dash.respondents">Respondents</h2>
       <div id="respondentsList" class="text-sm text-slate-700"></div>
     </div>
 
-    <!-- Block health matrix -->
-    <h2 class="text-lg font-semibold mb-1">Block health matrix</h2>
-    <p class="text-slate-500 text-xs mb-3">All 9 blocks side-by-side, sorted worst-first by net score (strengths − weaknesses). <b>Contested</b> = team rates both strengths and weaknesses high — usually means "it depends on which part of the business."</p>
+    <h2 class="text-lg font-semibold mb-1" data-i18n="dash.matrix">Block health matrix</h2>
+    <p class="text-slate-500 text-xs mb-3" data-i18n="dash.matrixHelp" data-i18n-html="1">All 9 blocks side-by-side, sorted worst-first by net score (strengths − weaknesses). <b>Contested</b> = team rates both strengths and weaknesses high — usually means "it depends on which part of the business."</p>
     <div id="dashMatrix" class="bg-white border border-slate-200 rounded-lg p-4 mb-6 overflow-x-auto"></div>
 
-    <h2 class="text-lg font-semibold mb-3">Per-block profile (team average)</h2>
+    <h2 class="text-lg font-semibold mb-3" data-i18n="dash.perBlock">Per-block profile (team average)</h2>
     <div id="dashBlocks" class="grid md:grid-cols-2 gap-5"></div>
 
-    <h2 class="text-lg font-semibold mt-8 mb-3">Divergence — where the team disagrees most</h2>
+    <h2 class="text-lg font-semibold mt-8 mb-3" data-i18n="dash.divergence">Divergence — where the team disagrees most</h2>
     <div id="dashDivergence" class="bg-white border border-slate-200 rounded-lg p-4"></div>
 
-    <!-- Top cross-force priorities -->
-    <h2 class="text-lg font-semibold mt-8 mb-1">Top priorities from external scan</h2>
-    <p class="text-slate-500 text-xs mb-3">Highest-priority items pooled across all four external forces. Use this to decide what the team should act on or watch next.</p>
+    <h2 class="text-lg font-semibold mt-8 mb-1" data-i18n="dash.topPriorities">Top priorities from external scan</h2>
+    <p class="text-slate-500 text-xs mb-3" data-i18n="dash.topPrioritiesHelp">Highest-priority items pooled across all four external forces. Use this to decide what the team should act on or watch next.</p>
     <div id="dashTopPriorities" class="grid md:grid-cols-2 gap-5 mb-6"></div>
 
-    <h2 class="text-lg font-semibold mt-8 mb-3">External SWOT — all notes</h2>
+    <h2 class="text-lg font-semibold mt-8 mb-3" data-i18n="dash.externalAll">External SWOT — all notes</h2>
     <div id="dashExternal" class="grid md:grid-cols-2 gap-5"></div>
   </section>
 
 </main>
 
-<footer class="max-w-6xl mx-auto px-4 py-6 text-xs text-slate-400">
+<footer class="max-w-6xl mx-auto px-4 py-6 text-xs text-slate-400" data-i18n="app.footer">
   Adapted from Alexander Osterwalder &amp; Yves Pigneur, <em>Business Model Generation</em> (Wiley, 2010). This tool is an independent implementation; statement wording is a paraphrase intended for internal use.
 </footer>
 
 <script>
 /* ============================================================
-   BMC SWOT — single-file web app (v3)
+   BMC SWOT — single-file web app (v4, bilingual EN/FR)
    ============================================================ */
 
-/* ---------- 0. BAKED-IN SUPABASE CONFIG ----------
-   Publishable (anon) key is safe to ship to browsers — security lives in RLS
-   and the SECURITY DEFINER RPCs (see supabase-setup.sql). Overridable via the
-   "Advanced" panel on the Setup view for forks. */
 const DEFAULT_CONFIG = {
   url: "https://umsfhkzzpsckpujwauyc.supabase.co",
   key: "sb_publishable_dpfc2SfTQLGre5xwuqvGKw_6vOYgyvm"
 };
 
-/* ---------- 1. STATEMENTS ---------- */
+/* ---------- 1. BILINGUAL CONTENT ----------
+   Every user-facing string keyed { en, fr }. The canonical identifier for a
+   statement is (block_key, sign, statement_index) — the English text is also
+   always persisted in `statement_text` for downstream consumers (CSV etc.). */
+
 const SWOT = [
-  { key: "value-propositions", title: "Value Propositions", group: "Value Proposition",
-    color: "#93c5fd",
-    strengths: [
-      "Our value propositions are well aligned with customer needs.",
-      "Our value propositions have strong network effects.",
-      "There are strong synergies between our products and services.",
-      "Our customers are very satisfied."
-    ],
-    weaknesses: [
-      "Our value propositions and customer needs are misaligned.",
-      "There are no network effects around our value propositions.",
-      "There are no synergies between our products and services.",
-      "Substantial parts of our value propositions could easily be copied."
-    ]
+  { key: "value-propositions", color: "#93c5fd",
+    title: { en: "Value Propositions", fr: "Propositions de valeur" },
+    group: { en: "Value Proposition", fr: "Proposition de valeur" },
+    strengths: {
+      en: [
+        "Our value propositions are well aligned with customer needs.",
+        "Our value propositions have strong network effects.",
+        "There are strong synergies between our products and services.",
+        "Our customers are very satisfied."
+      ],
+      fr: [
+        "Nos propositions de valeur correspondent bien aux besoins des clients.",
+        "Nos propositions de valeur bénéficient de forts effets de réseau.",
+        "Il existe de fortes synergies entre nos produits et services.",
+        "Nos clients sont très satisfaits."
+      ]
+    },
+    weaknesses: {
+      en: [
+        "Our value propositions and customer needs are misaligned.",
+        "There are no network effects around our value propositions.",
+        "There are no synergies between our products and services.",
+        "Substantial parts of our value propositions could easily be copied."
+      ],
+      fr: [
+        "Nos propositions de valeur sont mal alignées avec les besoins des clients.",
+        "Il n'y a pas d'effets de réseau autour de nos propositions de valeur.",
+        "Il n'y a pas de synergies entre nos produits et services.",
+        "Une part substantielle de nos propositions de valeur pourrait être facilement copiée."
+      ]
+    }
   },
-  { key: "revenue-streams", title: "Revenue Streams", group: "Cost / Revenue",
-    color: "#86efac",
-    strengths: [
-      "We benefit from strong, sustainable margins.",
-      "Our revenues are predictable.",
-      "We have recurring revenue streams and high repeat-purchase rates.",
-      "Our revenue streams are diversified.",
-      "We collect revenues before we incur costs.",
-      "We charge for what customers are really willing to pay for.",
-      "Our pricing mechanisms capture full willingness to pay."
-    ],
-    weaknesses: [
-      "Our margins are unsustainable.",
-      "Our revenues are unpredictable.",
-      "Revenues are transactional, with few recurring streams.",
-      "We depend on a single revenue stream.",
-      "We incur costs long before collecting revenues.",
-      "We charge for things customers aren’t really willing to pay for.",
-      "Our pricing mechanisms leave significant money on the table."
-    ]
+  { key: "revenue-streams", color: "#86efac",
+    title: { en: "Revenue Streams", fr: "Flux de revenus" },
+    group: { en: "Cost / Revenue", fr: "Coûts / Revenus" },
+    strengths: {
+      en: [
+        "We benefit from strong, sustainable margins.",
+        "Our revenues are predictable.",
+        "We have recurring revenue streams and high repeat-purchase rates.",
+        "Our revenue streams are diversified.",
+        "We collect revenues before we incur costs.",
+        "We charge for what customers are really willing to pay for.",
+        "Our pricing mechanisms capture full willingness to pay."
+      ],
+      fr: [
+        "Nous bénéficions de marges solides et durables.",
+        "Nos revenus sont prévisibles.",
+        "Nous avons des flux de revenus récurrents et des taux de rachat élevés.",
+        "Nos flux de revenus sont diversifiés.",
+        "Nous encaissons les revenus avant d'engager les coûts.",
+        "Nous facturons ce pour quoi les clients sont réellement prêts à payer.",
+        "Nos mécanismes de prix capturent la volonté totale de payer."
+      ]
+    },
+    weaknesses: {
+      en: [
+        "Our margins are unsustainable.",
+        "Our revenues are unpredictable.",
+        "Revenues are transactional, with few recurring streams.",
+        "We depend on a single revenue stream.",
+        "We incur costs long before collecting revenues.",
+        "We charge for things customers aren’t really willing to pay for.",
+        "Our pricing mechanisms leave significant money on the table."
+      ],
+      fr: [
+        "Nos marges sont insoutenables.",
+        "Nos revenus sont imprévisibles.",
+        "Les revenus sont transactionnels, avec peu de flux récurrents.",
+        "Nous dépendons d'un seul flux de revenus.",
+        "Nous engageons les coûts longtemps avant d'encaisser les revenus.",
+        "Nous facturons pour des choses que les clients ne sont pas vraiment prêts à payer.",
+        "Nos mécanismes de prix laissent beaucoup d'argent sur la table."
+      ]
+    }
   },
-  { key: "cost-structure", title: "Cost Structure", group: "Cost / Revenue",
-    color: "#86efac",
-    strengths: [
-      "Our costs are predictable.",
-      "Our cost structure is correctly matched to our business model.",
-      "Our operations are cost-efficient.",
-      "We benefit from economies of scale."
-    ],
-    weaknesses: [
-      "Our costs are unpredictable.",
-      "Our cost structure is mismatched with our business model.",
-      "Our operations are cost-inefficient.",
-      "We fail to benefit from economies of scale."
-    ]
+  { key: "cost-structure", color: "#86efac",
+    title: { en: "Cost Structure", fr: "Structure de coûts" },
+    group: { en: "Cost / Revenue", fr: "Coûts / Revenus" },
+    strengths: {
+      en: [
+        "Our costs are predictable.",
+        "Our cost structure is correctly matched to our business model.",
+        "Our operations are cost-efficient.",
+        "We benefit from economies of scale."
+      ],
+      fr: [
+        "Nos coûts sont prévisibles.",
+        "Notre structure de coûts correspond bien à notre modèle d'affaires.",
+        "Nos opérations sont efficientes en termes de coûts.",
+        "Nous bénéficions d'économies d'échelle."
+      ]
+    },
+    weaknesses: {
+      en: [
+        "Our costs are unpredictable.",
+        "Our cost structure is mismatched with our business model.",
+        "Our operations are cost-inefficient.",
+        "We fail to benefit from economies of scale."
+      ],
+      fr: [
+        "Nos coûts sont imprévisibles.",
+        "Notre structure de coûts est inadaptée à notre modèle d'affaires.",
+        "Nos opérations sont inefficientes en termes de coûts.",
+        "Nous ne bénéficions pas d'économies d'échelle."
+      ]
+    }
   },
-  { key: "key-resources", title: "Key Resources", group: "Infrastructure",
-    color: "#fde68a",
-    strengths: [
-      "Our key resources are difficult for competitors to replicate.",
-      "Resource needs are predictable.",
-      "We deploy key resources in the right amount at the right time."
-    ],
-    weaknesses: [
-      "Our key resources are easily replicable by competitors.",
-      "We have insufficient key resources.",
-      "Resource needs are unpredictable."
-    ]
+  { key: "key-resources", color: "#fde68a",
+    title: { en: "Key Resources", fr: "Ressources clés" },
+    group: { en: "Infrastructure", fr: "Infrastructure" },
+    strengths: {
+      en: [
+        "Our key resources are difficult for competitors to replicate.",
+        "Resource needs are predictable.",
+        "We deploy key resources in the right amount at the right time."
+      ],
+      fr: [
+        "Nos ressources clés sont difficiles à reproduire pour les concurrents.",
+        "Les besoins en ressources sont prévisibles.",
+        "Nous déployons les ressources clés au bon moment et en quantité adéquate."
+      ]
+    },
+    weaknesses: {
+      en: [
+        "Our key resources are easily replicable by competitors.",
+        "We have insufficient key resources.",
+        "Resource needs are unpredictable."
+      ],
+      fr: [
+        "Nos ressources clés sont facilement reproductibles par les concurrents.",
+        "Nous manquons de ressources clés.",
+        "Les besoins en ressources sont imprévisibles."
+      ]
+    }
   },
-  { key: "key-activities", title: "Key Activities", group: "Infrastructure",
-    color: "#fde68a",
-    strengths: [
-      "We execute key activities efficiently.",
-      "Our key activities are difficult to copy.",
-      "Execution quality is high.",
-      "We strike the right balance between in-house and outsourced execution."
-    ],
-    weaknesses: [
-      "We execute key activities inefficiently.",
-      "Our key activities are easy to copy.",
-      "Execution quality is low.",
-      "We have a poor balance between in-house and outsourced execution."
-    ]
+  { key: "key-activities", color: "#fde68a",
+    title: { en: "Key Activities", fr: "Activités clés" },
+    group: { en: "Infrastructure", fr: "Infrastructure" },
+    strengths: {
+      en: [
+        "We execute key activities efficiently.",
+        "Our key activities are difficult to copy.",
+        "Execution quality is high.",
+        "We strike the right balance between in-house and outsourced execution."
+      ],
+      fr: [
+        "Nous exécutons nos activités clés efficacement.",
+        "Nos activités clés sont difficiles à copier.",
+        "La qualité d'exécution est élevée.",
+        "Nous avons le bon équilibre entre exécution interne et externalisée."
+      ]
+    },
+    weaknesses: {
+      en: [
+        "We execute key activities inefficiently.",
+        "Our key activities are easy to copy.",
+        "Execution quality is low.",
+        "We have a poor balance between in-house and outsourced execution."
+      ],
+      fr: [
+        "Nous exécutons nos activités clés de manière inefficace.",
+        "Nos activités clés sont faciles à copier.",
+        "La qualité d'exécution est faible.",
+        "Nous avons un mauvais équilibre entre exécution interne et externalisée."
+      ]
+    }
   },
-  { key: "key-partnerships", title: "Key Partnerships", group: "Infrastructure",
-    color: "#fde68a",
-    strengths: [
-      "We are focused and work with partners when necessary.",
-      "We enjoy strong working relationships with our key partners."
-    ],
-    weaknesses: [
-      "We are unfocused and fail to work with partners when we should.",
-      "Our relationships with partners are conflict-ridden."
-    ]
+  { key: "key-partnerships", color: "#fde68a",
+    title: { en: "Key Partnerships", fr: "Partenariats clés" },
+    group: { en: "Infrastructure", fr: "Infrastructure" },
+    strengths: {
+      en: [
+        "We are focused and work with partners when necessary.",
+        "We enjoy strong working relationships with our key partners."
+      ],
+      fr: [
+        "Nous sommes focalisés et travaillons avec des partenaires quand nécessaire.",
+        "Nous entretenons de solides relations de travail avec nos partenaires clés."
+      ]
+    },
+    weaknesses: {
+      en: [
+        "We are unfocused and fail to work with partners when we should.",
+        "Our relationships with partners are conflict-ridden."
+      ],
+      fr: [
+        "Nous manquons de focus et ne travaillons pas avec des partenaires alors que nous le devrions.",
+        "Nos relations avec les partenaires sont conflictuelles."
+      ]
+    }
   },
-  { key: "customer-segments", title: "Customer Segments", group: "Customer Interface",
-    color: "#f9a8d4",
-    strengths: [
-      "Customer churn rates are low.",
-      "Our customer base is well segmented.",
-      "We are continuously acquiring new customers."
-    ],
-    weaknesses: [
-      "Customer churn rates are high.",
-      "Our customer base is poorly segmented.",
-      "We are not acquiring new customers."
-    ]
+  { key: "customer-segments", color: "#f9a8d4",
+    title: { en: "Customer Segments", fr: "Segments de clientèle" },
+    group: { en: "Customer Interface", fr: "Interface client" },
+    strengths: {
+      en: [
+        "Customer churn rates are low.",
+        "Our customer base is well segmented.",
+        "We are continuously acquiring new customers."
+      ],
+      fr: [
+        "Les taux d'attrition clients sont faibles.",
+        "Notre base de clients est bien segmentée.",
+        "Nous acquérons continuellement de nouveaux clients."
+      ]
+    },
+    weaknesses: {
+      en: [
+        "Customer churn rates are high.",
+        "Our customer base is poorly segmented.",
+        "We are not acquiring new customers."
+      ],
+      fr: [
+        "Les taux d'attrition clients sont élevés.",
+        "Notre base de clients est mal segmentée.",
+        "Nous n'acquérons pas de nouveaux clients."
+      ]
+    }
   },
-  { key: "channels", title: "Channels", group: "Customer Interface",
-    color: "#f9a8d4",
-    strengths: [
-      "Our channels are very efficient.",
-      "Our channels are very effective.",
-      "Channel reach is strong among customers.",
-      "Customers can easily see and use our channels.",
-      "Channels are strongly integrated across stages.",
-      "Channels provide economies of scope.",
-      "Channels are well matched to our customer segments."
-    ],
-    weaknesses: [
-      "Our channels are inefficient.",
-      "Our channels are ineffective.",
-      "Our channel reach is weak.",
-      "Customers barely notice our channels.",
-      "Channels are poorly integrated across stages.",
-      "Channels provide no economies of scope.",
-      "Channels are poorly matched to our customer segments."
-    ]
+  { key: "channels", color: "#f9a8d4",
+    title: { en: "Channels", fr: "Canaux" },
+    group: { en: "Customer Interface", fr: "Interface client" },
+    strengths: {
+      en: [
+        "Our channels are very efficient.",
+        "Our channels are very effective.",
+        "Channel reach is strong among customers.",
+        "Customers can easily see and use our channels.",
+        "Channels are strongly integrated across stages.",
+        "Channels provide economies of scope.",
+        "Channels are well matched to our customer segments."
+      ],
+      fr: [
+        "Nos canaux sont très efficients.",
+        "Nos canaux sont très performants.",
+        "La portée de nos canaux auprès des clients est forte.",
+        "Les clients peuvent facilement voir et utiliser nos canaux.",
+        "Les canaux sont fortement intégrés à travers les étapes.",
+        "Les canaux offrent des économies de gamme.",
+        "Les canaux sont bien adaptés à nos segments de clientèle."
+      ]
+    },
+    weaknesses: {
+      en: [
+        "Our channels are inefficient.",
+        "Our channels are ineffective.",
+        "Our channel reach is weak.",
+        "Customers barely notice our channels.",
+        "Channels are poorly integrated across stages.",
+        "Channels provide no economies of scope.",
+        "Channels are poorly matched to our customer segments."
+      ],
+      fr: [
+        "Nos canaux sont inefficients.",
+        "Nos canaux sont peu performants.",
+        "La portée de nos canaux est faible.",
+        "Les clients remarquent à peine nos canaux.",
+        "Les canaux sont mal intégrés à travers les étapes.",
+        "Les canaux n'offrent pas d'économies de gamme.",
+        "Les canaux sont mal adaptés à nos segments de clientèle."
+      ]
+    }
   },
-  { key: "customer-relationships", title: "Customer Relationships", group: "Customer Interface",
-    color: "#f9a8d4",
-    strengths: [
-      "Our customer relationships are strong.",
-      "Relationship quality correctly matches each customer segment.",
-      "Relationships bind customers through high switching costs.",
-      "Our brand is strong."
-    ],
-    weaknesses: [
-      "Our customer relationships are weak.",
-      "Relationship quality doesn’t match customer segments.",
-      "Customer switching costs are low.",
-      "Our brand is weak."
-    ]
+  { key: "customer-relationships", color: "#f9a8d4",
+    title: { en: "Customer Relationships", fr: "Relations clients" },
+    group: { en: "Customer Interface", fr: "Interface client" },
+    strengths: {
+      en: [
+        "Our customer relationships are strong.",
+        "Relationship quality correctly matches each customer segment.",
+        "Relationships bind customers through high switching costs.",
+        "Our brand is strong."
+      ],
+      fr: [
+        "Nos relations clients sont solides.",
+        "La qualité des relations correspond bien à chaque segment de clientèle.",
+        "Les relations fidélisent les clients par des coûts de changement élevés.",
+        "Notre marque est forte."
+      ]
+    },
+    weaknesses: {
+      en: [
+        "Our customer relationships are weak.",
+        "Relationship quality doesn’t match customer segments.",
+        "Customer switching costs are low.",
+        "Our brand is weak."
+      ],
+      fr: [
+        "Nos relations clients sont faibles.",
+        "La qualité des relations ne correspond pas aux segments de clientèle.",
+        "Les coûts de changement pour les clients sont faibles.",
+        "Notre marque est faible."
+      ]
+    }
   }
 ];
 
 const EXTERNAL_FORCES = [
-  { key: "market",    title: "Market forces",       desc: "Market issues, segments, needs/demands, switching costs, revenue attractiveness." },
-  { key: "industry",  title: "Industry forces",     desc: "Competitors, new entrants, substitutes, suppliers & value-chain actors, stakeholders." },
-  { key: "trends",    title: "Key trends",          desc: "Technology, regulatory, societal & cultural, socioeconomic." },
-  { key: "macro",     title: "Macroeconomic forces",desc: "Global market conditions, capital markets, commodities & resources, economic infrastructure." }
+  { key: "market",
+    title: { en: "Market forces", fr: "Forces du marché" },
+    desc:  { en: "Market issues, segments, needs/demands, switching costs, revenue attractiveness.",
+             fr: "Enjeux de marché, segments, besoins/demandes, coûts de changement, attractivité des revenus." } },
+  { key: "industry",
+    title: { en: "Industry forces", fr: "Forces de l'industrie" },
+    desc:  { en: "Competitors, new entrants, substitutes, suppliers & value-chain actors, stakeholders.",
+             fr: "Concurrents, nouveaux entrants, substituts, fournisseurs et acteurs de la chaîne de valeur, parties prenantes." } },
+  { key: "trends",
+    title: { en: "Key trends", fr: "Tendances clés" },
+    desc:  { en: "Technology, regulatory, societal & cultural, socioeconomic.",
+             fr: "Technologies, réglementations, tendances sociétales et culturelles, socio-économiques." } },
+  { key: "macro",
+    title: { en: "Macroeconomic forces", fr: "Forces macroéconomiques" },
+    desc:  { en: "Global market conditions, capital markets, commodities & resources, economic infrastructure.",
+             fr: "Conditions des marchés mondiaux, marchés des capitaux, matières premières et ressources, infrastructure économique." } }
 ];
 
-/* ---------- 2. APP STATE ---------- */
+/* ---------- 2. I18N DICTIONARY ---------- */
+const I18N = {
+  en: {
+    "app.title":    "Business Model Canvas — SWOT Assessment",
+    "app.subtitle": "After Osterwalder &amp; Pigneur, <em>Business Model Generation</em> (2010)",
+    "app.footer":   "Adapted from Alexander Osterwalder &amp; Yves Pigneur, <em>Business Model Generation</em> (Wiley, 2010). This tool is an independent implementation; statement wording is a paraphrase intended for internal use.",
+
+    "nav.setup": "Setup", "nav.assess": "Assess", "nav.external": "External SWOT", "nav.dashboard": "Dashboard",
+
+    "banner.live": "● Live (Supabase)", "banner.local": "● Local demo mode",
+    "banner.owner": "★ Owner", "banner.submitted": "✓ Submitted",
+    "banner.saving": "Saving…", "banner.saved": "✓ Saved",
+    "banner.unsavedTooltip": "Clicks that failed to save. Click to retry.",
+    "banner.unsaved": "⚠ {n} unsaved — retry",
+    "banner.session": "Session:", "banner.user": "User:",
+
+    "setup.welcome": "Welcome",
+    "setup.intro":   "Configure your session. Everyone on your exec team opens this same page and fills it in; results aggregate live in the Dashboard.",
+    "setup.you":     "1. You",
+    "setup.yourName": "Your name",
+    "setup.role":     "Role (optional)",
+    "setup.rolePlaceholder": "e.g. CEO",
+    "setup.nameHint": "You're identified by an anonymous token stored in this browser — not by your typed name. Two people can type the same name without overwriting each other.",
+    "setup.session":  "2. Assessment session",
+    "setup.selectCreate": "Select or create a session",
+    "setup.refreshList":  "Refresh list",
+    "setup.newSessionPlaceholder": "New session name, e.g. Q2 2026 review",
+    "setup.create": "Create",
+    "setup.beginBtn": "Save & begin assessment →",
+    "setup.ownerPanel": "Session owner? Unlock dashboard on this device",
+    "setup.ownerHelp":  "Respondents: ignore this section — you don't need an owner key to answer. It's only for the person who <em>created</em> the session and wants to see the compiled dashboard on a new browser or device.",
+    "setup.ownerStep1": "Pick the session from the dropdown above.",
+    "setup.ownerStep2": "Paste the owner key you saved when you created it.",
+    "setup.ownerStep3": "Click <b>Unlock</b>. The Dashboard tab will appear.",
+    "setup.ownerKeyPlaceholder": "Paste owner key…",
+    "setup.unlock":  "Unlock",
+
+    "assess.title": "SWOT assessment — 9 building blocks",
+    "assess.intro": "For each statement, click a dot 1→5 to reflect how strongly it applies to your business today. Green dots = strengths (+), red dots = weaknesses (−). Click the same dot again to clear.",
+    "assess.backSetup":  "← Back to setup",
+    "assess.nextExternal": "Next: External SWOT →",
+    "assess.strengths":  "Strengths (+)",
+    "assess.weaknesses": "Weaknesses (−)",
+    "assess.commentPlaceholder": "Optional comment…",
+    "assess.progressRated": "{done} / {total} rated",
+    "assess.ariaStrength": "Strength {n} of 5",
+    "assess.ariaWeakness": "Weakness {n} of 5",
+
+    "external.title": "Environmental scan — Opportunities & Threats",
+    "external.helpHtml":
+      `<p class="mb-2"><b>What this is.</b> A classic SWOT has four quadrants. The 9-block rating you just did gives you the <b>S</b>trengths and <b>W</b>eaknesses — an internal x-ray of your business model. This tab is for the other half: <b>O</b>pportunities and <b>T</b>hreats, which come from <em>outside</em> your business.</p>
+       <p class="mb-2">Osterwalder &amp; Pigneur structure that external view around four "forces" that surround the Canvas (pp. 200–211). Go through each one and list things you'd want the team to act on (opportunities) or watch for (threats), with a 1–5 priority.</p>
+       <ul class="list-disc ml-5 text-xs text-sky-900/90">
+         <li><b>Market forces</b> — shifts in customer needs, new segments emerging, switching costs changing, revenue attractiveness.</li>
+         <li><b>Industry forces</b> — competitor moves, new entrants, substitute offerings, supplier/value-chain dynamics, stakeholders.</li>
+         <li><b>Key trends</b> — technology, regulatory, societal/cultural, socioeconomic.</li>
+         <li><b>Macroeconomic forces</b> — global conditions, capital markets, commodity prices, economic infrastructure.</li>
+       </ul>`,
+    "external.opportunities": "Opportunities",
+    "external.threats": "Threats",
+    "external.addOpportunity": "Add opportunity…",
+    "external.addThreat": "Add threat…",
+    "external.priorityTitle": "Priority 1–5",
+    "external.noNotes": "No notes yet.",
+    "external.backBlocks": "← Back to blocks",
+    "external.seeDashboard": "See compiled dashboard →",
+
+    "submit.ready": "Ready to submit?",
+    "submit.readyHelp": "You've rated {done} of {total} statements. Once you submit, your answers lock (but you can unsubmit to edit again).",
+    "submit.submittedHeading": "Assessment submitted ✓",
+    "submit.submittedHelp": "You submitted on {date}. Responses are locked. Click Unsubmit if you need to edit.",
+    "submit.submitBtn": "Submit my assessment",
+    "submit.unsubmitBtn": "Unsubmit & edit",
+    "submit.confirmIncomplete": "You've rated {done} of {total} statements. Submit anyway?",
+    "submit.confirmUnsubmit":   "Unsubmit and allow editing? The owner will see your status change back to in-progress.",
+    "submit.thanks": "Thanks — your assessment has been submitted.",
+
+    "dash.title": "Compiled dashboard",
+    "dash.subtitle": "Session: {session} · {submitted}/{total} submitted",
+    "dash.respondents": "Respondents",
+    "dash.refresh": "↻ Refresh",
+    "dash.exportCsv": "Export CSV",
+    "dash.exportJson": "Export JSON",
+    "dash.print": "Print",
+    "dash.matrix": "Block health matrix",
+    "dash.matrixHelp": `All 9 blocks side-by-side, sorted worst-first by net score (strengths − weaknesses). <b>Contested</b> = team rates both strengths and weaknesses high — usually means "it depends on which part of the business."`,
+    "dash.perBlock": "Per-block profile (team average)",
+    "dash.divergence": "Divergence — where the team disagrees most",
+    "dash.topPriorities": "Top priorities from external scan",
+    "dash.topPrioritiesHelp": "Highest-priority items pooled across all four external forces. Use this to decide what the team should act on or watch next.",
+    "dash.externalAll": "External SWOT — all notes",
+    "dash.stats.completion": "Completion",
+    "dash.stats.completionSub": "{pct}% submitted",
+    "dash.stats.avgS": "Avg strengths",
+    "dash.stats.avgW": "Avg weaknesses",
+    "dash.stats.avgSub": "of 5, across all blocks",
+    "dash.stats.net": "Net position",
+    "dash.stats.netSub": "strengths minus weaknesses",
+    "dash.stats.biggestGap": "Biggest gap",
+    "dash.stats.biggestGapSub": "net {net}",
+    "dash.summaryEmpty": "Summary will appear once someone rates at least one statement.",
+    "dash.matrixCol.block":  "Block",
+    "dash.matrixCol.area":   "Area",
+    "dash.matrixCol.s":      "Strengths (+)",
+    "dash.matrixCol.w":      "Weaknesses (−)",
+    "dash.matrixCol.net":    "Net",
+    "dash.matrixCol.status": "Status",
+    "dash.matrixEmpty": "Will populate once responses come in.",
+    "dash.status.strong":    "Strong",
+    "dash.status.atRisk":    "At risk",
+    "dash.status.contested": "Contested",
+    "dash.status.quiet":     "Quiet",
+    "dash.status.balanced":  "Balanced",
+    "dash.divergenceCol.block":     "Block",
+    "dash.divergenceCol.statement": "Statement",
+    "dash.divergenceCol.avg":       "Avg",
+    "dash.divergenceEmpty": "Need at least two respondents per statement to compute divergence.",
+    "dash.topOpps":    "Top opportunities",
+    "dash.topThreats": "Top threats",
+    "dash.noExternal": "No external notes yet.",
+    "dash.noneYet":    "None yet.",
+    "dash.noRespondents": "No respondents yet.",
+    "dash.status.submitted":   "✓ Submitted",
+    "dash.status.inProgress":  "In progress ({n}/{total})",
+    "dash.status.notStarted":  "Not started",
+    "dash.commentCount":       "{n} comment{s}",
+    "dash.denied": "You are not the owner of this session. No dashboard access.",
+    "dash.deniedAlert": "Dashboard access denied. Your owner key may be invalid.",
+
+    "alert.enterName":      "Please enter your name.",
+    "alert.giveSessionName":"Give the session a name.",
+    "alert.selectSession":  "Select or create an assessment session.",
+    "alert.pickSessionFirst":"Pick a session from the dropdown first.",
+    "alert.pasteOwnerKey":  "Paste your owner key.",
+    "alert.keyMismatch":    "That key doesn't match this session.",
+    "alert.ownerAccepted":  "Owner key accepted. The Dashboard tab is now visible.",
+    "alert.alreadySubmitted":"You've already submitted this session. Use the Unsubmit button on the External SWOT page if you need to edit.",
+    "alert.startFailed":    "Couldn't start session: ",
+    "alert.dashboardOwnerOnly":"The dashboard is visible only to the session owner. Ask the session creator for the owner key if you need access.",
+    "alert.pickSessionAndName":"Pick or create a session and enter your name first (Setup).",
+    "alert.deleteConfirm":  "Delete this note?",
+    "alert.deleteFailed":   "Couldn't delete: ",
+    "alert.deleteNotYours": "Couldn't delete — that note isn't yours.",
+    "alert.submitFailed":   "Couldn't submit: ",
+    "alert.unsubmitFailed": "Couldn't unsubmit: ",
+    "alert.saveNoteFailed": "Couldn't save note: ",
+    "alert.supabaseNotConnected":"Supabase not connected.",
+    "alert.errorPrefix":    "Error: ",
+
+    "session.noneYet": "— none yet, create one →",
+    "session.local": "Local demo session"
+  },
+  fr: {
+    "app.title":    "Business Model Canvas — Évaluation SWOT",
+    "app.subtitle": "D'après Osterwalder et Pigneur, <em>Business Model Nouvelle Génération</em> (2010)",
+    "app.footer":   "Adapté d'Alexander Osterwalder et Yves Pigneur, <em>Business Model Nouvelle Génération</em> (Wiley, 2010). Cet outil est une implémentation indépendante ; le libellé des énoncés est une paraphrase destinée à un usage interne.",
+
+    "nav.setup": "Configuration", "nav.assess": "Évaluer", "nav.external": "SWOT externe", "nav.dashboard": "Tableau de bord",
+
+    "banner.live": "● En direct (Supabase)", "banner.local": "● Mode démo local",
+    "banner.owner": "★ Propriétaire", "banner.submitted": "✓ Soumis",
+    "banner.saving": "Enregistrement…", "banner.saved": "✓ Enregistré",
+    "banner.unsavedTooltip": "Clics qui n'ont pas pu être enregistrés. Cliquez pour réessayer.",
+    "banner.unsaved": "⚠ {n} non enregistré(s) — réessayer",
+    "banner.session": "Session :", "banner.user": "Utilisateur :",
+
+    "setup.welcome": "Bienvenue",
+    "setup.intro":   "Configurez votre session. Toute votre équipe ouvre cette même page et la remplit ; les résultats s'agrègent en direct dans le Tableau de bord.",
+    "setup.you":     "1. Vous",
+    "setup.yourName": "Votre nom",
+    "setup.role":     "Rôle (facultatif)",
+    "setup.rolePlaceholder": "ex. PDG",
+    "setup.nameHint": "Vous êtes identifié·e par un jeton anonyme stocké dans ce navigateur — pas par le nom que vous saisissez. Deux personnes peuvent entrer le même nom sans s'écraser.",
+    "setup.session":  "2. Session d'évaluation",
+    "setup.selectCreate": "Sélectionner ou créer une session",
+    "setup.refreshList":  "Actualiser la liste",
+    "setup.newSessionPlaceholder": "Nom de la nouvelle session, ex. revue T2 2026",
+    "setup.create": "Créer",
+    "setup.beginBtn": "Enregistrer et commencer →",
+    "setup.ownerPanel": "Propriétaire de la session ? Déverrouiller le tableau de bord sur cet appareil",
+    "setup.ownerHelp":  "Répondants : ignorez cette section — vous n'avez pas besoin de clé de propriétaire pour répondre. Elle sert uniquement à la personne qui a <em>créé</em> la session et souhaite voir le tableau de bord compilé depuis un autre navigateur ou appareil.",
+    "setup.ownerStep1": "Sélectionnez la session dans la liste ci-dessus.",
+    "setup.ownerStep2": "Collez la clé de propriétaire enregistrée lors de la création.",
+    "setup.ownerStep3": "Cliquez sur <b>Déverrouiller</b>. L'onglet Tableau de bord apparaîtra.",
+    "setup.ownerKeyPlaceholder": "Collez la clé de propriétaire…",
+    "setup.unlock":  "Déverrouiller",
+
+    "assess.title": "Évaluation SWOT — 9 blocs",
+    "assess.intro": "Pour chaque énoncé, cliquez un point 1→5 pour refléter la force avec laquelle il s'applique à votre entreprise aujourd'hui. Points verts = forces (+), points rouges = faiblesses (−). Cliquez à nouveau sur le même point pour effacer.",
+    "assess.backSetup":  "← Retour à la configuration",
+    "assess.nextExternal": "Suivant : SWOT externe →",
+    "assess.strengths":  "Forces (+)",
+    "assess.weaknesses": "Faiblesses (−)",
+    "assess.commentPlaceholder": "Commentaire facultatif…",
+    "assess.progressRated": "{done} / {total} évalués",
+    "assess.ariaStrength": "Force {n} sur 5",
+    "assess.ariaWeakness": "Faiblesse {n} sur 5",
+
+    "external.title": "Analyse environnementale — Opportunités et menaces",
+    "external.helpHtml":
+      `<p class="mb-2"><b>De quoi s'agit-il.</b> Un SWOT classique comporte quatre cadrans. L'évaluation des 9 blocs que vous venez de faire vous donne les <b>F</b>orces et les <b>F</b>aiblesses — une radiographie interne de votre modèle d'affaires. Cet onglet couvre l'autre moitié : les <b>O</b>pportunités et les <b>M</b>enaces, qui viennent de l'<em>extérieur</em> de votre entreprise.</p>
+       <p class="mb-2">Osterwalder et Pigneur structurent cette vue externe autour de quatre « forces » qui entourent le Canvas (p. 200–211). Parcourez chacune et listez ce sur quoi l'équipe devrait agir (opportunités) ou rester vigilante (menaces), avec une priorité 1–5.</p>
+       <ul class="list-disc ml-5 text-xs text-sky-900/90">
+         <li><b>Forces du marché</b> — évolutions des besoins clients, nouveaux segments émergents, coûts de changement, attractivité des revenus.</li>
+         <li><b>Forces de l'industrie</b> — mouvements des concurrents, nouveaux entrants, offres de substitution, dynamique fournisseurs/chaîne de valeur, parties prenantes.</li>
+         <li><b>Tendances clés</b> — technologies, réglementations, sociétales/culturelles, socio-économiques.</li>
+         <li><b>Forces macroéconomiques</b> — conditions globales, marchés des capitaux, prix des matières premières, infrastructure économique.</li>
+       </ul>`,
+    "external.opportunities": "Opportunités",
+    "external.threats": "Menaces",
+    "external.addOpportunity": "Ajouter une opportunité…",
+    "external.addThreat": "Ajouter une menace…",
+    "external.priorityTitle": "Priorité 1–5",
+    "external.noNotes": "Aucune note pour l'instant.",
+    "external.backBlocks": "← Retour aux blocs",
+    "external.seeDashboard": "Voir le tableau de bord compilé →",
+
+    "submit.ready": "Prêt·e à soumettre ?",
+    "submit.readyHelp": "Vous avez évalué {done} sur {total} énoncés. Une fois soumises, vos réponses seront verrouillées (vous pourrez annuler la soumission pour modifier).",
+    "submit.submittedHeading": "Évaluation soumise ✓",
+    "submit.submittedHelp": "Vous avez soumis le {date}. Les réponses sont verrouillées. Cliquez sur Annuler la soumission pour modifier.",
+    "submit.submitBtn": "Soumettre mon évaluation",
+    "submit.unsubmitBtn": "Annuler la soumission et modifier",
+    "submit.confirmIncomplete": "Vous avez évalué {done} sur {total} énoncés. Soumettre quand même ?",
+    "submit.confirmUnsubmit":   "Annuler la soumission pour modifier ? Le/la propriétaire verra votre statut repasser en cours.",
+    "submit.thanks": "Merci — votre évaluation a été soumise.",
+
+    "dash.title": "Tableau de bord compilé",
+    "dash.subtitle": "Session : {session} · {submitted}/{total} soumis",
+    "dash.respondents": "Répondant·e·s",
+    "dash.refresh": "↻ Actualiser",
+    "dash.exportCsv": "Exporter CSV",
+    "dash.exportJson": "Exporter JSON",
+    "dash.print": "Imprimer",
+    "dash.matrix": "Matrice de santé des blocs",
+    "dash.matrixHelp": `Les 9 blocs côte à côte, triés du plus faible au plus fort selon le score net (forces − faiblesses). <b>Contesté</b> = l'équipe note à la fois des forces et des faiblesses élevées — cela signifie souvent « cela dépend de quelle partie de l'entreprise ».`,
+    "dash.perBlock": "Profil par bloc (moyenne d'équipe)",
+    "dash.divergence": "Divergence — les points où l'équipe est la plus en désaccord",
+    "dash.topPriorities": "Priorités clés issues de l'analyse externe",
+    "dash.topPrioritiesHelp": "Éléments les plus prioritaires regroupés sur les quatre forces externes. Utilisez cette vue pour décider ce sur quoi l'équipe doit agir ou rester vigilante en premier.",
+    "dash.externalAll": "SWOT externe — toutes les notes",
+    "dash.stats.completion": "Progression",
+    "dash.stats.completionSub": "{pct}% soumis",
+    "dash.stats.avgS": "Moyenne forces",
+    "dash.stats.avgW": "Moyenne faiblesses",
+    "dash.stats.avgSub": "sur 5, tous blocs",
+    "dash.stats.net": "Position nette",
+    "dash.stats.netSub": "forces moins faiblesses",
+    "dash.stats.biggestGap": "Plus grand écart",
+    "dash.stats.biggestGapSub": "net {net}",
+    "dash.summaryEmpty": "Le résumé apparaîtra dès qu'un·e répondant·e aura évalué au moins un énoncé.",
+    "dash.matrixCol.block":  "Bloc",
+    "dash.matrixCol.area":   "Domaine",
+    "dash.matrixCol.s":      "Forces (+)",
+    "dash.matrixCol.w":      "Faiblesses (−)",
+    "dash.matrixCol.net":    "Net",
+    "dash.matrixCol.status": "État",
+    "dash.matrixEmpty": "Se remplira dès que des réponses arriveront.",
+    "dash.status.strong":    "Fort",
+    "dash.status.atRisk":    "À risque",
+    "dash.status.contested": "Contesté",
+    "dash.status.quiet":     "Calme",
+    "dash.status.balanced":  "Équilibré",
+    "dash.divergenceCol.block":     "Bloc",
+    "dash.divergenceCol.statement": "Énoncé",
+    "dash.divergenceCol.avg":       "Moy",
+    "dash.divergenceEmpty": "Il faut au moins deux répondant·e·s par énoncé pour calculer la divergence.",
+    "dash.topOpps":    "Opportunités prioritaires",
+    "dash.topThreats": "Menaces prioritaires",
+    "dash.noExternal": "Aucune note externe pour l'instant.",
+    "dash.noneYet":    "Aucune pour l'instant.",
+    "dash.noRespondents": "Aucun·e répondant·e pour l'instant.",
+    "dash.status.submitted":   "✓ Soumis",
+    "dash.status.inProgress":  "En cours ({n}/{total})",
+    "dash.status.notStarted":  "Pas commencé",
+    "dash.commentCount":       "{n} commentaire{s}",
+    "dash.denied": "Vous n'êtes pas le/la propriétaire de cette session. Pas d'accès au tableau de bord.",
+    "dash.deniedAlert": "Accès au tableau de bord refusé. Votre clé de propriétaire est peut-être invalide.",
+
+    "alert.enterName":      "Veuillez entrer votre nom.",
+    "alert.giveSessionName":"Donnez un nom à la session.",
+    "alert.selectSession":  "Sélectionnez ou créez une session d'évaluation.",
+    "alert.pickSessionFirst":"Sélectionnez d'abord une session dans la liste.",
+    "alert.pasteOwnerKey":  "Collez votre clé de propriétaire.",
+    "alert.keyMismatch":    "Cette clé ne correspond pas à cette session.",
+    "alert.ownerAccepted":  "Clé de propriétaire acceptée. L'onglet Tableau de bord est désormais visible.",
+    "alert.alreadySubmitted":"Vous avez déjà soumis cette session. Utilisez le bouton Annuler la soumission sur la page SWOT externe pour modifier.",
+    "alert.startFailed":    "Impossible de démarrer la session : ",
+    "alert.dashboardOwnerOnly":"Le tableau de bord n'est visible que pour le/la propriétaire de la session. Demandez la clé au créateur si vous avez besoin d'y accéder.",
+    "alert.pickSessionAndName":"Sélectionnez ou créez une session et entrez votre nom d'abord (Configuration).",
+    "alert.deleteConfirm":  "Supprimer cette note ?",
+    "alert.deleteFailed":   "Impossible de supprimer : ",
+    "alert.deleteNotYours": "Impossible de supprimer — cette note ne vous appartient pas.",
+    "alert.submitFailed":   "Impossible de soumettre : ",
+    "alert.unsubmitFailed": "Impossible d'annuler la soumission : ",
+    "alert.saveNoteFailed": "Impossible d'enregistrer la note : ",
+    "alert.supabaseNotConnected":"Supabase non connecté.",
+    "alert.errorPrefix":    "Erreur : ",
+
+    "session.noneYet": "— aucune pour l'instant, créez-en une →",
+    "session.local": "Session de démo locale"
+  }
+};
+
+/* ---------- 3. APP STATE + HELPERS ---------- */
 function getOrCreateRespondentToken() {
   let t = localStorage.getItem("bmc_swot_respondent_token");
   if (!t) {
@@ -380,11 +849,17 @@ function getOrCreateRespondentToken() {
   }
   return t;
 }
+function pickInitialLang() {
+  const stored = localStorage.getItem("bmc_swot_lang");
+  if (stored === "en" || stored === "fr") return stored;
+  return (navigator.language || "").toLowerCase().startsWith("fr") ? "fr" : "en";
+}
 
 const state = {
   cfg: { ...DEFAULT_CONFIG },
   user: JSON.parse(localStorage.getItem("bmc_swot_user") || "{}"),
   token: getOrCreateRespondentToken(),
+  lang: pickInitialLang(),
   assessmentId: localStorage.getItem("bmc_swot_assessment") || null,
   assessmentName: localStorage.getItem("bmc_swot_assessment_name") || null,
   ownerKeys: JSON.parse(localStorage.getItem("bmc_swot_owner_keys") || "{}"),
@@ -396,9 +871,34 @@ const state = {
   submittedAt: null,
   supabase: null,
   mode: "local",
-  saveState: "idle",    // idle | saving | saved | error
-  pendingRetries: new Map(), // id -> payload, for failed writes
+  saveState: "idle",
+  pendingRetries: new Map(),
+  currentView: "setup",
 };
+
+// Translate a key with optional {placeholder} substitution.
+function t(key, vars) {
+  const dict = I18N[state.lang] || I18N.en;
+  let s = dict[key] ?? I18N.en[key] ?? key;
+  if (vars) for (const k in vars) s = s.replaceAll(`{${k}}`, vars[k]);
+  return s;
+}
+// Translate an { en, fr } value.
+function tL(obj) {
+  if (obj == null) return "";
+  if (typeof obj === "string") return obj;
+  return obj[state.lang] ?? obj.en ?? "";
+}
+// Look up a SWOT block by key.
+function swotBlock(key) { return SWOT.find(b => b.key === key); }
+// Get a statement's text in the current language (always English in DB).
+function statementText(blockKey, sign, idx, lang) {
+  const b = swotBlock(blockKey); if (!b) return "";
+  const arr = sign === "+" ? b.strengths : b.weaknesses;
+  return (arr[lang || state.lang] || arr.en)[idx] || "";
+}
+function canonicalStatementText(blockKey, sign, idx) { return statementText(blockKey, sign, idx, "en"); }
+
 function currentOwnerKey() { return state.ownerKeys[state.assessmentId] || null; }
 function isOwner() {
   if (state.mode === "local") return true;
@@ -414,7 +914,47 @@ function updateOwnerNav() {
   if (btn) btn.classList.toggle("hidden", !isOwner());
 }
 
-/* ---------- 3. SUPABASE ---------- */
+/* ---------- 4. I18N RENDER ---------- */
+function applyStaticI18n() {
+  document.documentElement.lang = state.lang;
+  document.title = t("app.title").replace(/<[^>]+>/g, "");
+  // text / innerHTML on data-i18n elements
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.dataset.i18n;
+    const val = t(key);
+    // Most keys include HTML fragments, so use innerHTML — values come from
+    // our dictionary, not user input.
+    el.innerHTML = val;
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+  document.querySelectorAll("[data-i18n-title]").forEach(el => {
+    el.title = t(el.dataset.i18nTitle);
+  });
+  // External help box has multi-paragraph HTML — inject here.
+  const extHelp = document.getElementById("externalHelpBox");
+  if (extHelp) extHelp.innerHTML = t("external.helpHtml");
+  // Language toggle active state
+  document.querySelectorAll("#langToggle .lang-btn").forEach(b => {
+    b.classList.toggle("active", b.dataset.lang === state.lang);
+  });
+}
+
+function setLang(newLang) {
+  if (newLang !== "en" && newLang !== "fr") return;
+  state.lang = newLang;
+  localStorage.setItem("bmc_swot_lang", newLang);
+  applyStaticI18n();
+  // Rebuild dynamic views
+  renderBanner();
+  if (state.currentView === "assess")    renderAssess();
+  if (state.currentView === "external")  renderExternal();
+  if (state.currentView === "dashboard") renderDashboard();
+  updateProgress();
+}
+
+/* ---------- 5. SUPABASE ---------- */
 function connectSupabase() {
   if (state.cfg.url && state.cfg.key && window.supabase) {
     try {
@@ -431,15 +971,15 @@ function connectSupabase() {
 
 function renderBanner() {
   const row = document.getElementById("bannerModeRow");
-  const ownerChip  = isOwner()  ? `<span class="chip bg-indigo-100 text-indigo-800">★ Owner</span>` : "";
-  const submitChip = isSubmitted() ? `<span class="chip bg-sky-100 text-sky-800">✓ Submitted</span>` : "";
+  const ownerChip  = isOwner()     ? `<span class="chip bg-indigo-100 text-indigo-800">${t("banner.owner")}</span>` : "";
+  const submitChip = isSubmitted() ? `<span class="chip bg-sky-100 text-sky-800">${t("banner.submitted")}</span>` : "";
   const saveChip   = renderSaveChip();
   const modeChip   = state.mode === "supabase"
-    ? `<span class="chip bg-emerald-100 text-emerald-800">● Live (Supabase)</span>`
-    : `<span class="chip bg-amber-100 text-amber-800">● Local demo mode</span>`;
+    ? `<span class="chip bg-emerald-100 text-emerald-800">${t("banner.live")}</span>`
+    : `<span class="chip bg-amber-100 text-amber-800">${t("banner.local")}</span>`;
   row.innerHTML = `
     ${modeChip}${ownerChip}${submitChip}${saveChip}
-    <span class="text-slate-500">Session: <b>${escapeHtml(state.assessmentName || "—")}</b> · User: <b>${escapeHtml(state.user.name || "—")}</b></span>`;
+    <span class="text-slate-500">${t("banner.session")} <b>${escapeHtml(state.assessmentName || "—")}</b> · ${t("banner.user")} <b>${escapeHtml(state.user.name || "—")}</b></span>`;
   updateOwnerNav();
 }
 
@@ -447,11 +987,11 @@ function renderSaveChip() {
   if (state.mode !== "supabase") return "";
   const retries = state.pendingRetries.size;
   if (retries > 0) {
-    return `<span class="chip bg-rose-100 text-rose-800" title="Clicks that failed to save. Click to retry.">
-      <button id="retryFailed" class="underline">⚠ ${retries} unsaved — retry</button></span>`;
+    return `<span class="chip bg-rose-100 text-rose-800" title="${escapeHtml(t("banner.unsavedTooltip"))}">
+      <button id="retryFailed" class="underline" type="button">${t("banner.unsaved", { n: retries })}</button></span>`;
   }
-  if (state.saveState === "saving") return `<span class="chip bg-amber-100 text-amber-800">Saving…</span>`;
-  if (state.saveState === "saved")  return `<span class="chip bg-emerald-100 text-emerald-800">✓ Saved</span>`;
+  if (state.saveState === "saving") return `<span class="chip bg-amber-100 text-amber-800">${t("banner.saving")}</span>`;
+  if (state.saveState === "saved")  return `<span class="chip bg-emerald-100 text-emerald-800">${t("banner.saved")}</span>`;
   return "";
 }
 
@@ -466,18 +1006,19 @@ function setSaveState(s) {
   }
 }
 
-/* ---------- 4. VIEW SWITCHING ---------- */
+/* ---------- 6. VIEW SWITCHING ---------- */
 function showView(name) {
   if (name === "dashboard" && !isOwner()) {
-    alert("The dashboard is visible only to the session owner. Ask the session creator for the owner key if you need access.");
+    alert(t("alert.dashboardOwnerOnly"));
     name = "assess";
   }
   if ((name === "assess" || name === "external") && state.mode === "supabase") {
     if (!state.assessmentId || state.assessmentId === "local" || !state.user.name) {
-      alert("Pick or create a session and enter your name first (Setup).");
+      alert(t("alert.pickSessionAndName"));
       name = "setup";
     }
   }
+  state.currentView = name;
   document.querySelectorAll(".view").forEach(el => el.classList.add("hidden"));
   const el = document.getElementById("view-" + name);
   if (el) el.classList.remove("hidden");
@@ -493,8 +1034,12 @@ function showView(name) {
 document.querySelectorAll(".nav-btn, .nav-btn-link").forEach(b => {
   b.addEventListener("click", () => showView(b.dataset.view));
 });
+document.getElementById("langToggle").addEventListener("click", e => {
+  const b = e.target.closest(".lang-btn");
+  if (b) setLang(b.dataset.lang);
+});
 
-/* ---------- 5. SETUP VIEW ---------- */
+/* ---------- 7. SETUP VIEW ---------- */
 function renderSetup() {
   document.getElementById("userName").value  = state.user.name || "";
   document.getElementById("userRole").value  = state.user.role || "";
@@ -504,17 +1049,17 @@ async function refreshAssessments() {
   const sel = document.getElementById("assessmentSelect");
   sel.innerHTML = "";
   if (state.mode !== "supabase") {
-    sel.innerHTML = `<option value="local">Local demo session</option>`;
+    sel.innerHTML = `<option value="local">${escapeHtml(t("session.local"))}</option>`;
     state.assessmentId = "local";
-    state.assessmentName = "Local demo session";
+    state.assessmentName = t("session.local");
     renderBanner();
     return;
   }
   const { data, error } = await state.supabase
     .from("assessments_public").select("*")
     .order("created_at", { ascending: false });
-  if (error) { sel.innerHTML = `<option>Error: ${error.message}</option>`; return; }
-  if (!data.length) { sel.innerHTML = `<option value="">— none yet, create one →</option>`; return; }
+  if (error) { sel.innerHTML = `<option>${t("alert.errorPrefix")}${error.message}</option>`; return; }
+  if (!data.length) { sel.innerHTML = `<option value="">${escapeHtml(t("session.noneYet"))}</option>`; return; }
   data.forEach(a => {
     const o = document.createElement("option");
     const owned = !!state.ownerKeys[a.id];
@@ -532,21 +1077,19 @@ async function refreshAssessments() {
     renderBanner();
   };
   sel.onchange = syncFromSelect;
-  // Sync immediately so the dropdown's visible default matches state even
-  // without a user-triggered change event.
   syncFromSelect();
 }
 document.getElementById("refreshAssessments").addEventListener("click", refreshAssessments);
 
 document.getElementById("createAssessment").addEventListener("click", async () => {
   const name = document.getElementById("newAssessmentName").value.trim();
-  if (!name) return alert("Give the session a name.");
-  if (state.mode !== "supabase") return alert("Supabase not connected (see Advanced).");
+  if (!name) return alert(t("alert.giveSessionName"));
+  if (state.mode !== "supabase") return alert(t("alert.supabaseNotConnected"));
   const creator = document.getElementById("userName").value.trim() || state.user.name || null;
   const { data, error } = await state.supabase.rpc("create_assessment", {
     p_name: name, p_created_by: creator
   });
-  if (error) return alert("Error: " + error.message);
+  if (error) return alert(t("alert.errorPrefix") + error.message);
   const row = Array.isArray(data) ? data[0] : data;
   state.assessmentId = row.id;
   state.assessmentName = row.name;
@@ -560,44 +1103,56 @@ document.getElementById("createAssessment").addEventListener("click", async () =
 });
 
 function showOwnerKeyModal(key, sessionName) {
+  const modalText = state.lang === "fr" ? {
+    title: "Session créée",
+    body:  "Voici votre <b>clé de propriétaire</b>. Seule la personne qui détient cette clé peut voir le tableau de bord compilé. Elle est stockée dans votre navigateur — mais conservez-en une copie (gestionnaire de mots de passe) pour accéder au tableau de bord depuis un autre appareil.",
+    copy:  "Copier", copied: "Copié !",
+    dont:  "Ne <b>partagez pas</b> cette clé avec les répondant·e·s. Donnez-leur seulement l'URL de l'app et le nom de la session.",
+    close: "Enregistrée — fermer"
+  } : {
+    title: "Session created",
+    body:  "Here is your <b>owner key</b>. Only whoever holds this key can see the compiled dashboard. It is stored in your browser — but save a copy somewhere safe (password manager) so you can still access the dashboard from another device.",
+    copy:  "Copy", copied: "Copied!",
+    dont:  "Do <b>not</b> share this key with respondents. Give them only the app URL and the session name.",
+    close: "I've saved it — close"
+  };
   const wrap = document.createElement("div");
   wrap.className = "fixed inset-0 bg-black/50 z-50 grid place-items-center p-4";
   wrap.innerHTML = `
     <div class="bg-white rounded-lg max-w-lg w-full p-5 shadow-xl">
-      <h3 class="text-lg font-bold mb-1">Session created: ${escapeHtml(sessionName)}</h3>
-      <p class="text-sm text-slate-600 mb-3">Here is your <b>owner key</b>. Only whoever holds this key can see the compiled dashboard. It is stored in your browser — but save a copy somewhere safe (password manager) so you can still access the dashboard from another device.</p>
+      <h3 class="text-lg font-bold mb-1">${escapeHtml(modalText.title)}: ${escapeHtml(sessionName)}</h3>
+      <p class="text-sm text-slate-600 mb-3">${modalText.body}</p>
       <div class="flex gap-2 mb-3">
         <input id="ownerKeyDisplay" readonly value="${escapeHtml(key)}" class="flex-1 border rounded px-3 py-2 text-sm font-mono bg-slate-50">
-        <button id="copyOwnerKey" class="bg-slate-900 text-white text-sm px-3 py-2 rounded">Copy</button>
+        <button id="copyOwnerKey" class="bg-slate-900 text-white text-sm px-3 py-2 rounded" type="button">${escapeHtml(modalText.copy)}</button>
       </div>
-      <p class="text-xs text-slate-500 mb-3">Do <b>not</b> share this key with respondents. Give them only the app URL and the session name.</p>
+      <p class="text-xs text-slate-500 mb-3">${modalText.dont}</p>
       <div class="text-right">
-        <button id="dismissOwnerKey" class="bg-emerald-600 text-white font-semibold px-4 py-2 rounded">I've saved it — close</button>
+        <button id="dismissOwnerKey" class="bg-emerald-600 text-white font-semibold px-4 py-2 rounded" type="button">${escapeHtml(modalText.close)}</button>
       </div>
     </div>`;
   document.body.appendChild(wrap);
   wrap.querySelector("#copyOwnerKey").onclick = () => {
     navigator.clipboard.writeText(key);
-    wrap.querySelector("#copyOwnerKey").textContent = "Copied!";
+    wrap.querySelector("#copyOwnerKey").textContent = modalText.copied;
   };
   wrap.querySelector("#dismissOwnerKey").onclick = () => wrap.remove();
 }
 
-// Manual owner-key entry for accessing dashboard on a different device
 document.getElementById("saveOwnerKey").addEventListener("click", async () => {
-  if (state.mode !== "supabase") return alert("Supabase not connected.");
-  if (!state.assessmentId || state.assessmentId === "local") return alert("Pick a session from the dropdown first.");
+  if (state.mode !== "supabase") return alert(t("alert.supabaseNotConnected"));
+  if (!state.assessmentId || state.assessmentId === "local") return alert(t("alert.pickSessionFirst"));
   const key = document.getElementById("ownerKeyInput").value.trim();
-  if (!key) return alert("Paste your owner key.");
+  if (!key) return alert(t("alert.pasteOwnerKey"));
   const { error } = await state.supabase.rpc("get_dashboard_responses", {
     p_assessment_id: state.assessmentId, p_owner_key: key
   });
-  if (error) return alert("That key doesn't match this session.");
+  if (error) return alert(t("alert.keyMismatch"));
   saveOwnerKey(state.assessmentId, key);
   document.getElementById("ownerKeyInput").value = "";
   renderBanner();
   startDashboardPolling();
-  alert("Owner key accepted. The Dashboard tab is now visible.");
+  alert(t("alert.ownerAccepted"));
 });
 
 document.getElementById("saveUserGo").addEventListener("click", async () => {
@@ -605,12 +1160,11 @@ document.getElementById("saveUserGo").addEventListener("click", async () => {
     name: document.getElementById("userName").value.trim(),
     role: document.getElementById("userRole").value.trim()
   };
-  if (!state.user.name) return alert("Please enter your name.");
+  if (!state.user.name) return alert(t("alert.enterName"));
   localStorage.setItem("bmc_swot_user", JSON.stringify(state.user));
 
   if (state.mode === "supabase") {
-    if (!state.assessmentId || state.assessmentId === "local") return alert("Select or create an assessment session.");
-    // Register/update our respondent row. Creates it on first save.
+    if (!state.assessmentId || state.assessmentId === "local") return alert(t("alert.selectSession"));
     const { error } = await state.supabase.rpc("upsert_respondent", {
       p_assessment_id: state.assessmentId,
       p_respondent_token: state.token,
@@ -619,9 +1173,9 @@ document.getElementById("saveUserGo").addEventListener("click", async () => {
     });
     if (error) {
       if (String(error.message || "").includes("already submitted")) {
-        alert("You've already submitted this session. Use the Unsubmit button on the External SWOT page if you need to edit.");
+        alert(t("alert.alreadySubmitted"));
       } else {
-        return alert("Couldn't start session: " + error.message);
+        return alert(t("alert.startFailed") + error.message);
       }
     }
     await loadMyRespondent();
@@ -633,7 +1187,7 @@ document.getElementById("saveUserGo").addEventListener("click", async () => {
   showView("assess");
 });
 
-/* ---------- 6. ASSESSMENT VIEW ---------- */
+/* ---------- 8. ASSESSMENT VIEW ---------- */
 function rKey(blockKey, sign, idx) { return `${blockKey}|${sign}|${idx}`; }
 
 function renderAssess() {
@@ -642,28 +1196,30 @@ function renderAssess() {
   SWOT.forEach(block => {
     const card = document.createElement("div");
     card.className = "block-card bg-white border border-slate-200 rounded-lg p-4";
+    const sArr = block.strengths[state.lang] || block.strengths.en;
+    const wArr = block.weaknesses[state.lang] || block.weaknesses.en;
     card.innerHTML = `
       <div class="flex items-center justify-between mb-3">
         <div>
-          <div class="text-xs text-slate-500 uppercase tracking-wide">${block.group}</div>
-          <div class="font-semibold text-lg">${block.title}</div>
+          <div class="text-xs text-slate-500 uppercase tracking-wide">${escapeHtml(tL(block.group))}</div>
+          <div class="font-semibold text-lg">${escapeHtml(tL(block.title))}</div>
         </div>
         <div class="w-6 h-6 rounded" style="background:${block.color}"></div>
       </div>
       <div>
         <div class="flex items-center justify-between mb-1">
-          <div class="text-xs font-semibold text-emerald-700">Strengths (+)</div>
+          <div class="text-xs font-semibold text-emerald-700">${t("assess.strengths")}</div>
           <div class="text-[10px] text-slate-400">1 &nbsp;&nbsp; 2 &nbsp;&nbsp; 3 &nbsp;&nbsp; 4 &nbsp;&nbsp; 5</div>
         </div>
         <div class="space-y-2 mb-4">
-          ${block.strengths.map((s,i)=>rowHTML(block.key,"+",i,s)).join("")}
+          ${sArr.map((s,i)=>rowHTML(block.key,"+",i,s)).join("")}
         </div>
         <div class="flex items-center justify-between mb-1">
-          <div class="text-xs font-semibold text-rose-700">Weaknesses (−)</div>
+          <div class="text-xs font-semibold text-rose-700">${t("assess.weaknesses")}</div>
           <div class="text-[10px] text-slate-400">1 &nbsp;&nbsp; 2 &nbsp;&nbsp; 3 &nbsp;&nbsp; 4 &nbsp;&nbsp; 5</div>
         </div>
         <div class="space-y-2">
-          ${block.weaknesses.map((s,i)=>rowHTML(block.key,"-",i,s)).join("")}
+          ${wArr.map((s,i)=>rowHTML(block.key,"-",i,s)).join("")}
         </div>
       </div>
     `;
@@ -671,7 +1227,7 @@ function renderAssess() {
   });
 
   container.querySelectorAll(".dot").forEach(d => d.addEventListener("click", onDotClick));
-  container.querySelectorAll("textarea.comment").forEach(t => t.addEventListener("blur", onCommentBlur));
+  container.querySelectorAll("textarea.comment").forEach(ta => ta.addEventListener("blur", onCommentBlur));
 
   Object.entries(state.responses).forEach(([k, v]) => {
     paintDots(k, v.score);
@@ -684,30 +1240,31 @@ function renderAssess() {
 
 function rowHTML(blockKey, sign, idx, text) {
   const id = rKey(blockKey, sign, idx);
+  const aria = sign === "+" ? t("assess.ariaStrength") : t("assess.ariaWeakness");
   return `
     <div class="grid grid-cols-[1fr_auto] gap-3 items-start" data-row="${id}">
       <div>
         <div class="text-sm leading-snug">${escapeHtml(text)}</div>
         <textarea class="comment mt-1 w-full text-xs border rounded px-2 py-1" rows="1"
-          placeholder="Optional comment…" data-id="${id}"></textarea>
+          placeholder="${escapeHtml(t("assess.commentPlaceholder"))}" data-id="${id}"></textarea>
       </div>
       <div class="flex gap-1.5 pt-0.5" data-dots="${id}" data-sign="${sign}">
         ${[1,2,3,4,5].map(n => `
           <button type="button" class="dot" data-n="${n}" data-id="${id}" data-sign="${sign}"
-            aria-label="${sign==='+'?'Strength':'Weakness'} ${n} of 5"></button>`).join("")}
+            aria-label="${escapeHtml(aria.replaceAll("{n}", n))}"></button>`).join("")}
       </div>
     </div>`;
 }
 
 function onDotClick(e) {
   if (isSubmitted()) return;
-  const t = e.currentTarget;
-  const id = t.dataset.id;
-  const n = +t.dataset.n;
-  const sign = t.dataset.sign;
+  const el = e.currentTarget;
+  const id = el.dataset.id;
+  const n = +el.dataset.n;
+  const sign = el.dataset.sign;
   const current = state.responses[id]?.score || 0;
   const score = (current === n) ? 0 : n;
-  state.responses[id] = { ...(state.responses[id] || {}), score, sign };
+  state.responses[id] = { ...(state.responses[id] || { sign }), score, sign };
   paintDots(id, score);
   updateProgress();
   persistResponse(id);
@@ -733,11 +1290,17 @@ function onCommentBlur(e) {
   persistResponse(id);
 }
 
+function totalStatements() {
+  return SWOT.reduce((a,b) => a + b.strengths.en.length + b.weaknesses.en.length, 0);
+}
+function ratedCount() {
+  return Object.values(state.responses).filter(r => (r.score||0) > 0).length;
+}
 function updateProgress() {
-  const total = SWOT.reduce((a,b) => a + b.strengths.length + b.weaknesses.length, 0);
-  const done  = Object.values(state.responses).filter(r => (r.score||0) > 0).length;
+  const total = totalStatements();
+  const done  = ratedCount();
   const el = document.getElementById("progressLabel");
-  if (el) el.textContent = `${done} / ${total} rated`;
+  if (el) el.textContent = t("assess.progressRated", { done, total });
   const bar = document.getElementById("progressBar");
   if (bar) bar.style.width = `${Math.round(done/total*100)}%`;
 }
@@ -749,16 +1312,15 @@ async function persistResponse(id) {
   }
   const [blockKey, sign, idxStr] = id.split("|");
   const idx = +idxStr;
-  const block = SWOT.find(b => b.key === blockKey);
-  const text  = sign === "+" ? block.strengths[idx] : block.weaknesses[idx];
   const r = state.responses[id];
+  // Persist English canonical text in DB so exports are stable.
   const payload = {
     p_assessment_id: state.assessmentId,
     p_respondent_token: state.token,
     p_block_key: blockKey,
     p_sign: sign,
     p_idx: idx,
-    p_statement_text: text,
+    p_statement_text: canonicalStatementText(blockKey, sign, idx),
     p_score: r.score || 0,
     p_comment: r.comment || null
   };
@@ -815,7 +1377,7 @@ async function loadMyRespondent() {
   renderBanner();
 }
 
-/* ---------- 7. EXTERNAL SWOT VIEW ---------- */
+/* ---------- 9. EXTERNAL SWOT VIEW ---------- */
 function renderExternal() {
   const container = document.getElementById("externalContainer");
   container.innerHTML = "";
@@ -824,30 +1386,30 @@ function renderExternal() {
     wrap.className = "bg-white border border-slate-200 rounded-lg p-4";
     wrap.innerHTML = `
       <div class="mb-2">
-        <div class="font-semibold">${f.title}</div>
-        <div class="text-xs text-slate-500">${f.desc}</div>
+        <div class="font-semibold">${escapeHtml(tL(f.title))}</div>
+        <div class="text-xs text-slate-500">${escapeHtml(tL(f.desc))}</div>
       </div>
       <div class="grid grid-cols-2 gap-3">
         <div>
-          <div class="text-xs font-semibold text-emerald-700 mb-1">Opportunities</div>
+          <div class="text-xs font-semibold text-emerald-700 mb-1">${t("external.opportunities")}</div>
           <div class="notes-list space-y-2" data-force="${f.key}" data-type="opportunity"></div>
           <div class="flex gap-1 mt-2">
-            <input type="text" class="flex-1 border rounded px-2 py-1 text-xs" placeholder="Add opportunity…" data-force="${f.key}" data-type="opportunity">
-            <select class="border rounded text-xs priority-select" title="Priority 1–5">
+            <input type="text" class="flex-1 border rounded px-2 py-1 text-xs" placeholder="${escapeHtml(t("external.addOpportunity"))}" data-force="${f.key}" data-type="opportunity">
+            <select class="border rounded text-xs priority-select" title="${escapeHtml(t("external.priorityTitle"))}">
               ${[1,2,3,4,5].map(n => `<option value="${n}"${n===3?" selected":""}>${n}</option>`).join("")}
             </select>
-            <button class="add-note bg-emerald-600 text-white text-xs px-2 rounded" data-force="${f.key}" data-type="opportunity">+</button>
+            <button class="add-note bg-emerald-600 text-white text-xs px-2 rounded" data-force="${f.key}" data-type="opportunity" type="button">+</button>
           </div>
         </div>
         <div>
-          <div class="text-xs font-semibold text-rose-700 mb-1">Threats</div>
+          <div class="text-xs font-semibold text-rose-700 mb-1">${t("external.threats")}</div>
           <div class="notes-list space-y-2" data-force="${f.key}" data-type="threat"></div>
           <div class="flex gap-1 mt-2">
-            <input type="text" class="flex-1 border rounded px-2 py-1 text-xs" placeholder="Add threat…" data-force="${f.key}" data-type="threat">
-            <select class="border rounded text-xs priority-select" title="Priority 1–5">
+            <input type="text" class="flex-1 border rounded px-2 py-1 text-xs" placeholder="${escapeHtml(t("external.addThreat"))}" data-force="${f.key}" data-type="threat">
+            <select class="border rounded text-xs priority-select" title="${escapeHtml(t("external.priorityTitle"))}">
               ${[1,2,3,4,5].map(n => `<option value="${n}"${n===3?" selected":""}>${n}</option>`).join("")}
             </select>
-            <button class="add-note bg-rose-600 text-white text-xs px-2 rounded" data-force="${f.key}" data-type="threat">+</button>
+            <button class="add-note bg-rose-600 text-white text-xs px-2 rounded" data-force="${f.key}" data-type="threat" type="button">+</button>
           </div>
         </div>
       </div>`;
@@ -881,12 +1443,12 @@ async function onAddNote(e) {
 
   if (state.mode === "supabase") {
     setSaveState("saving");
-    const { data, error } = await state.supabase.rpc("insert_external_note", {
+    const { error } = await state.supabase.rpc("insert_external_note", {
       p_assessment_id: state.assessmentId,
       p_respondent_token: state.token,
       p_force: force, p_type: type, p_note: txt, p_priority: prio
     });
-    if (error) { setSaveState("error"); return alert("Couldn't save note: " + error.message); }
+    if (error) { setSaveState("error"); return alert(t("alert.saveNoteFailed") + error.message); }
     setSaveState("saved");
     input.value = "";
     await loadMyExternal();
@@ -923,9 +1485,9 @@ function paintExternalNotes() {
       <div class="flex items-start gap-2 text-xs group">
         <span class="chip ${type==='opportunity'?'bg-emerald-100 text-emerald-800':'bg-rose-100 text-rose-800'}">P${n.priority}</span>
         <span class="flex-1">${escapeHtml(n.note)}</span>
-        ${isSubmitted() ? "" : `<button title="Delete" data-delete-id="${escapeHtml(n.id||'')}"
-          class="delete-note text-slate-300 hover:text-rose-600 leading-none px-1">×</button>`}
-      </div>`).join("") || `<div class="text-xs text-slate-400 italic">No notes yet.</div>`;
+        ${isSubmitted() ? "" : `<button title="×" data-delete-id="${escapeHtml(n.id||'')}"
+          class="delete-note text-slate-300 hover:text-rose-600 leading-none px-1" type="button">×</button>`}
+      </div>`).join("") || `<div class="text-xs text-slate-400 italic">${t("external.noNotes")}</div>`;
   });
   document.querySelectorAll("#externalContainer .delete-note").forEach(b =>
     b.addEventListener("click", onDeleteNote));
@@ -935,13 +1497,13 @@ async function onDeleteNote(e) {
   if (isSubmitted()) return;
   const id = e.currentTarget.dataset.deleteId;
   if (!id) return;
-  if (!confirm("Delete this note?")) return;
+  if (!confirm(t("alert.deleteConfirm"))) return;
   if (state.mode === "supabase") {
     const { data, error } = await state.supabase.rpc("delete_my_external_note", {
       p_id: id, p_respondent_token: state.token
     });
-    if (error) return alert("Couldn't delete: " + error.message);
-    if (!data) return alert("Couldn't delete — that note isn't yours.");
+    if (error) return alert(t("alert.deleteFailed") + error.message);
+    if (!data) return alert(t("alert.deleteNotYours"));
     await loadMyExternal();
   } else {
     state.externalNotes = state.externalNotes.filter(n => n.id !== id);
@@ -950,34 +1512,34 @@ async function onDeleteNote(e) {
   }
 }
 
-/* ---------- 7b. SUBMIT / UNSUBMIT ---------- */
+/* ---------- 10. SUBMIT / UNSUBMIT ---------- */
 function renderSubmitPanel() {
   const submitted = isSubmitted();
-  const total = SWOT.reduce((a,b) => a + b.strengths.length + b.weaknesses.length, 0);
-  const done  = Object.values(state.responses).filter(r => (r.score||0) > 0).length;
+  const total = totalStatements();
+  const done  = ratedCount();
   const heading = document.getElementById("submitHeading");
   const help    = document.getElementById("submitHelp");
   const submit  = document.getElementById("submitBtn");
   const unsub   = document.getElementById("unsubmitBtn");
 
   if (submitted) {
-    heading.textContent = "Assessment submitted ✓";
-    help.textContent    = `You submitted on ${new Date(state.submittedAt).toLocaleString()}. Responses are locked. Click Unsubmit if you need to edit.`;
+    heading.textContent = t("submit.submittedHeading");
+    help.textContent    = t("submit.submittedHelp", { date: new Date(state.submittedAt).toLocaleString(state.lang) });
     submit.classList.add("hidden");
     unsub.classList.remove("hidden");
   } else {
-    heading.textContent = "Ready to submit?";
-    help.textContent = `You've rated ${done} of ${total} statements. Once you submit, your answers lock (but you can unsubmit to edit again).`;
+    heading.textContent = t("submit.ready");
+    help.textContent    = t("submit.readyHelp", { done, total });
     submit.classList.remove("hidden");
     unsub.classList.add("hidden");
   }
 }
 
 document.getElementById("submitBtn").addEventListener("click", async () => {
-  const total = SWOT.reduce((a,b) => a + b.strengths.length + b.weaknesses.length, 0);
-  const done  = Object.values(state.responses).filter(r => (r.score||0) > 0).length;
+  const total = totalStatements();
+  const done  = ratedCount();
   if (done < total) {
-    if (!confirm(`You've rated ${done} of ${total} statements. Submit anyway?`)) return;
+    if (!confirm(t("submit.confirmIncomplete", { done, total }))) return;
   }
   if (state.mode !== "supabase") {
     state.submittedAt = new Date().toISOString();
@@ -986,17 +1548,17 @@ document.getElementById("submitBtn").addEventListener("click", async () => {
     const { data, error } = await state.supabase.rpc("submit_assessment", {
       p_assessment_id: state.assessmentId, p_respondent_token: state.token
     });
-    if (error) return alert("Couldn't submit: " + error.message);
+    if (error) return alert(t("alert.submitFailed") + error.message);
     state.submittedAt = data;
   }
   renderBanner();
   renderSubmitPanel();
   applyLockedOverlay();
-  alert("Thanks — your assessment has been submitted.");
+  alert(t("submit.thanks"));
 });
 
 document.getElementById("unsubmitBtn").addEventListener("click", async () => {
-  if (!confirm("Unsubmit and allow editing? The owner will see your status change back to in-progress.")) return;
+  if (!confirm(t("submit.confirmUnsubmit"))) return;
   if (state.mode !== "supabase") {
     state.submittedAt = null;
     localStorage.removeItem("bmc_swot_submitted_" + state.assessmentId);
@@ -1004,7 +1566,7 @@ document.getElementById("unsubmitBtn").addEventListener("click", async () => {
     const { error } = await state.supabase.rpc("unsubmit_assessment", {
       p_assessment_id: state.assessmentId, p_respondent_token: state.token
     });
-    if (error) return alert("Couldn't unsubmit: " + error.message);
+    if (error) return alert(t("alert.unsubmitFailed") + error.message);
     state.submittedAt = null;
   }
   renderBanner();
@@ -1017,28 +1579,25 @@ function applyLockedOverlay() {
     const el = document.getElementById(id);
     if (!el) return;
     const existing = el.querySelector(":scope > .locked-overlay");
-    if (isSubmitted()) {
-      if (!existing) {
-        const o = document.createElement("div");
-        o.className = "locked-overlay";
-        o.title = "Submitted — unsubmit to edit";
-        el.style.position = "relative";
-        el.appendChild(o);
-      }
-    } else {
-      if (existing) existing.remove();
+    if (isSubmitted() && !existing) {
+      const o = document.createElement("div");
+      o.className = "locked-overlay";
+      el.style.position = "relative";
+      el.appendChild(o);
+    } else if (!isSubmitted() && existing) {
+      existing.remove();
     }
   });
 }
 
-/* ---------- 8. DASHBOARD ---------- */
+/* ---------- 11. DASHBOARD ---------- */
 async function loadDashboard() {
   if (state.mode === "supabase") {
     const key = currentOwnerKey();
     if (!key) {
-      document.getElementById("dashSubtitle").textContent =
-        "You are not the owner of this session. No dashboard access.";
-      ["dashBlocks","dashDivergence","dashExternal","respondentsList"].forEach(i => document.getElementById(i).innerHTML = "");
+      document.getElementById("dashSubtitle").textContent = t("dash.denied");
+      ["dashBlocks","dashDivergence","dashExternal","respondentsList","dashSummary","dashMatrix","dashTopPriorities"]
+        .forEach(i => { const el = document.getElementById(i); if (el) el.innerHTML = ""; });
       return;
     }
     const [r1, r2, r3] = await Promise.all([
@@ -1047,7 +1606,7 @@ async function loadDashboard() {
       state.supabase.rpc("get_dashboard_respondents", { p_assessment_id: state.assessmentId, p_owner_key: key })
     ]);
     if (r1.error || r2.error || r3.error) {
-      alert("Dashboard access denied. Your owner key may be invalid.");
+      alert(t("dash.deniedAlert"));
       return;
     }
     state.allResponses   = r1.data || [];
@@ -1057,13 +1616,12 @@ async function loadDashboard() {
     state.allResponses = Object.entries(state.responses).map(([id, r]) => {
       const [blockKey, sign, idxStr] = id.split("|");
       const idx = +idxStr;
-      const b = SWOT.find(x => x.key === blockKey);
       return {
         respondent_token: state.token,
         respondent_name: state.user.name || "You",
         respondent_role: state.user.role,
         block_key: blockKey, statement_sign: sign, statement_index: idx,
-        statement_text: sign === "+" ? b.strengths[idx] : b.weaknesses[idx],
+        statement_text: canonicalStatementText(blockKey, sign, idx),
         score: r.score, comment: r.comment
       };
     });
@@ -1076,7 +1634,7 @@ async function loadDashboard() {
     state.allRespondents = state.user.name ? [{
       respondent_token: state.token, name: state.user.name, role: state.user.role,
       submitted_at: state.submittedAt,
-      response_count: Object.values(state.responses).filter(r => (r.score||0) > 0).length
+      response_count: ratedCount()
     }] : [];
   }
   renderDashboard();
@@ -1086,12 +1644,13 @@ function renderDashboard() {
   const submitted = state.allRespondents.filter(r => r.submitted_at).length;
   const total     = state.allRespondents.length;
   document.getElementById("dashSubtitle").textContent =
-    `Session: ${state.assessmentName || "—"} · ${submitted}/${total} submitted`;
+    t("dash.subtitle", { session: state.assessmentName || "—", submitted, total });
 
-  // Compute per-block aggregates once — shared by summary strip, matrix, and bars.
   const blockStats = SWOT.map(block => {
-    const sRows = block.strengths.map((t,i)=>avgRow(block.key,"+",i,t));
-    const wRows = block.weaknesses.map((t,i)=>avgRow(block.key,"-",i,t));
+    const sArrEn = block.strengths.en;
+    const wArrEn = block.weaknesses.en;
+    const sRows = sArrEn.map((_,i)=>avgRow(block.key,"+",i));
+    const wRows = wArrEn.map((_,i)=>avgRow(block.key,"-",i));
     const sAvg  = avg(sRows.map(r => r.avg));
     const wAvg  = avg(wRows.map(r => r.avg));
     return { block, sRows, wRows, sAvg, wAvg, net: sAvg - wAvg };
@@ -1100,25 +1659,34 @@ function renderDashboard() {
   renderSummaryStrip(blockStats);
   renderBlockMatrix(blockStats);
   renderTopPriorities();
+  renderRespondentsList();
+  renderPerBlock(blockStats);
+  renderDivergence();
+  renderExternalAll();
+}
 
-  // Respondents list
-  const total_items = SWOT.reduce((a,b) => a + b.strengths.length + b.weaknesses.length, 0);
+function renderRespondentsList() {
+  const total = totalStatements();
   document.getElementById("respondentsList").innerHTML = state.allRespondents.length === 0
-    ? `<span class="text-slate-400 italic text-sm">No respondents yet.</span>`
+    ? `<span class="text-slate-400 italic text-sm">${t("dash.noRespondents")}</span>`
     : state.allRespondents.map(r => {
-        const statusChip = r.submitted_at
-          ? `<span class="chip bg-emerald-100 text-emerald-800">✓ Submitted</span>`
-          : (r.response_count > 0
-              ? `<span class="chip bg-amber-100 text-amber-800">In progress (${r.response_count}/${total_items})</span>`
-              : `<span class="chip bg-slate-100 text-slate-600">Not started</span>`);
+        let statusChip;
+        if (r.submitted_at) {
+          statusChip = `<span class="chip bg-emerald-100 text-emerald-800">${t("dash.status.submitted")}</span>`;
+        } else if (r.response_count > 0) {
+          statusChip = `<span class="chip bg-amber-100 text-amber-800">${t("dash.status.inProgress", { n: r.response_count, total })}</span>`;
+        } else {
+          statusChip = `<span class="chip bg-slate-100 text-slate-600">${t("dash.status.notStarted")}</span>`;
+        }
         return `<div class="flex items-center gap-2 mb-1">
           <span class="font-medium">${escapeHtml(r.name)}</span>
           ${r.role ? `<span class="text-slate-500 text-xs">· ${escapeHtml(r.role)}</span>` : ""}
           ${statusChip}
         </div>`;
       }).join("");
+}
 
-  // Per-block averages
+function renderPerBlock(blockStats) {
   const container = document.getElementById("dashBlocks");
   container.innerHTML = "";
   blockStats.forEach(({ block, sRows, wRows, sAvg, wAvg }) => {
@@ -1127,49 +1695,51 @@ function renderDashboard() {
     card.innerHTML = `
       <div class="flex items-center justify-between mb-2">
         <div>
-          <div class="text-xs text-slate-500 uppercase tracking-wide">${block.group}</div>
-          <div class="font-semibold text-lg">${block.title}</div>
+          <div class="text-xs text-slate-500 uppercase tracking-wide">${escapeHtml(tL(block.group))}</div>
+          <div class="font-semibold text-lg">${escapeHtml(tL(block.title))}</div>
         </div>
         <div class="text-right text-xs text-slate-500">
           <div>+ ${sAvg.toFixed(2)} / 5</div>
           <div>− ${wAvg.toFixed(2)} / 5</div>
         </div>
       </div>
-      <div class="space-y-2 mb-2">
-        ${sRows.map(r => barWithComments(r,"+")).join("")}
-      </div>
-      <div class="space-y-2">
-        ${wRows.map(r => barWithComments(r,"-")).join("")}
-      </div>`;
+      <div class="space-y-2 mb-2">${sRows.map(r => barWithComments(r,"+")).join("")}</div>
+      <div class="space-y-2">${wRows.map(r => barWithComments(r,"-")).join("")}</div>`;
     container.appendChild(card);
   });
+}
 
-  // Divergence
-  const allRows = SWOT.flatMap(block => [
-    ...block.strengths.map((t,i)=>({block: block.title, blockKey: block.key, sign:"+", idx:i, text:t})),
-    ...block.weaknesses.map((t,i)=>({block: block.title, blockKey: block.key, sign:"-", idx:i, text:t})),
-  ]).map(r => ({
+function renderDivergence() {
+  const allRows = SWOT.flatMap(block => {
+    const sArrEn = block.strengths.en;
+    const wArrEn = block.weaknesses.en;
+    return [
+      ...sArrEn.map((_,i)=>({ block, sign:"+", idx:i })),
+      ...wArrEn.map((_,i)=>({ block, sign:"-", idx:i }))
+    ];
+  }).map(r => ({
     ...r,
-    ...stats(state.allResponses.filter(x => x.block_key===r.blockKey && x.statement_sign===r.sign && x.statement_index===r.idx).map(x => x.score).filter(s=>s>0))
+    ...stats(state.allResponses.filter(x => x.block_key===r.block.key && x.statement_sign===r.sign && x.statement_index===r.idx).map(x => x.score).filter(s=>s>0))
   })).filter(r => r.n >= 2).sort((a,b) => b.stdev - a.stdev).slice(0, 10);
 
   document.getElementById("dashDivergence").innerHTML = allRows.length === 0
-    ? `<div class="text-sm text-slate-500 italic">Need at least two respondents per statement to compute divergence.</div>`
+    ? `<div class="text-sm text-slate-500 italic">${t("dash.divergenceEmpty")}</div>`
     : `<table class="w-full text-sm">
         <thead class="text-xs uppercase text-slate-500">
-          <tr><th class="text-left py-1">Block</th><th class="text-left py-1">Statement</th><th>Avg</th><th>σ</th><th>n</th></tr>
+          <tr><th class="text-left py-1">${t("dash.divergenceCol.block")}</th><th class="text-left py-1">${t("dash.divergenceCol.statement")}</th><th>${t("dash.divergenceCol.avg")}</th><th>σ</th><th>n</th></tr>
         </thead>
         <tbody>${allRows.map(r => `
           <tr class="border-t">
-            <td class="py-1 text-xs">${escapeHtml(r.block)} <span class="chip ${r.sign==='+'?'bg-emerald-100 text-emerald-800':'bg-rose-100 text-rose-800'}">${r.sign}</span></td>
-            <td class="py-1">${escapeHtml(r.text)}</td>
+            <td class="py-1 text-xs">${escapeHtml(tL(r.block.title))} <span class="chip ${r.sign==='+'?'bg-emerald-100 text-emerald-800':'bg-rose-100 text-rose-800'}">${r.sign}</span></td>
+            <td class="py-1">${escapeHtml(statementText(r.block.key, r.sign, r.idx))}</td>
             <td class="text-center">${r.mean.toFixed(2)}</td>
             <td class="text-center font-semibold">${r.stdev.toFixed(2)}</td>
             <td class="text-center">${r.n}</td>
           </tr>`).join("")}
         </tbody></table>`;
+}
 
-  // External
+function renderExternalAll() {
   const ext = document.getElementById("dashExternal");
   ext.innerHTML = "";
   EXTERNAL_FORCES.forEach(f => {
@@ -1178,15 +1748,15 @@ function renderDashboard() {
     const card = document.createElement("div");
     card.className = "block-card bg-white border border-slate-200 rounded-lg p-4";
     card.innerHTML = `
-      <div class="font-semibold mb-1">${f.title}</div>
-      <div class="text-xs text-slate-500 mb-3">${f.desc}</div>
+      <div class="font-semibold mb-1">${escapeHtml(tL(f.title))}</div>
+      <div class="text-xs text-slate-500 mb-3">${escapeHtml(tL(f.desc))}</div>
       <div class="grid grid-cols-2 gap-3 text-xs">
         <div>
-          <div class="font-semibold text-emerald-700 mb-1">Opportunities (${opps.length})</div>
+          <div class="font-semibold text-emerald-700 mb-1">${t("external.opportunities")} (${opps.length})</div>
           ${opps.map(n=>noteLine(n)).join("") || `<div class="italic text-slate-400">—</div>`}
         </div>
         <div>
-          <div class="font-semibold text-rose-700 mb-1">Threats (${thr.length})</div>
+          <div class="font-semibold text-rose-700 mb-1">${t("external.threats")} (${thr.length})</div>
           ${thr.map(n=>noteLine(n)).join("") || `<div class="italic text-slate-400">—</div>`}
         </div>
       </div>`;
@@ -1194,47 +1764,46 @@ function renderDashboard() {
   });
 }
 
-/* ---------- 8b. DASHBOARD WIDGETS ---------- */
+/* ---------- 11b. DASHBOARD WIDGETS ---------- */
 
-// Classify a block from its S/W averages. Thresholds chosen to feel intuitive
-// on a 1–5 scale: 3.5 is "the team agrees this is notably true".
 function blockStatus(sAvg, wAvg) {
   const sHigh = sAvg >= 3.5, wHigh = wAvg >= 3.5;
-  const sLow  = sAvg <= 2.0, wLow  = wAvg <= 2.0;
-  if (sHigh && wLow)   return { label: "Strong",    cls: "bg-emerald-100 text-emerald-800" };
-  if (sLow  && wHigh)  return { label: "At risk",   cls: "bg-rose-100 text-rose-800" };
-  if (sHigh && wHigh)  return { label: "Contested", cls: "bg-amber-100 text-amber-800" };
-  if (sLow  && wLow)   return { label: "Quiet",     cls: "bg-slate-100 text-slate-600" };
-  return                      { label: "Balanced",  cls: "bg-sky-100 text-sky-800" };
+  const sLow  = sAvg <= 2,   wLow  = wAvg <= 2;
+  if (sHigh && wLow)  return { label: t("dash.status.strong"),    cls: "bg-emerald-100 text-emerald-800" };
+  if (sLow  && wHigh) return { label: t("dash.status.atRisk"),    cls: "bg-rose-100 text-rose-800" };
+  if (sHigh && wHigh) return { label: t("dash.status.contested"), cls: "bg-amber-100 text-amber-800" };
+  if (sLow  && wLow)  return { label: t("dash.status.quiet"),     cls: "bg-slate-100 text-slate-600" };
+  return              { label: t("dash.status.balanced"),         cls: "bg-sky-100 text-sky-800" };
 }
 
 function renderSummaryStrip(blockStats) {
   const haveData = blockStats.some(b => b.sAvg > 0 || b.wAvg > 0);
   const el = document.getElementById("dashSummary");
   if (!haveData) {
-    el.innerHTML = `<div class="col-span-full text-sm text-slate-400 italic bg-white border border-slate-200 rounded-lg p-4">Summary will appear once someone rates at least one statement.</div>`;
+    el.innerHTML = `<div class="col-span-full text-sm text-slate-400 italic bg-white border border-slate-200 rounded-lg p-4">${t("dash.summaryEmpty")}</div>`;
     return;
   }
   const avgS = avg(blockStats.map(b => b.sAvg));
   const avgW = avg(blockStats.map(b => b.wAvg));
   const net  = avgS - avgW;
-  const sortedByNet = [...blockStats].sort((a,b) => a.net - b.net);
-  const weakest  = sortedByNet[0];
-  const strongest = sortedByNet[sortedByNet.length - 1];
+  const weakest = [...blockStats].sort((a,b) => a.net - b.net)[0];
 
-  const totalStatements = SWOT.reduce((a,b) => a + b.strengths.length + b.weaknesses.length, 0);
-  const submittedCount  = state.allRespondents.filter(r => r.submitted_at).length;
-  const respondents     = state.allRespondents.length;
-  const completionPct   = respondents ? Math.round((submittedCount / respondents) * 100) : 0;
+  const submittedCount = state.allRespondents.filter(r => r.submitted_at).length;
+  const respondents    = state.allRespondents.length;
+  const completionPct  = respondents ? Math.round((submittedCount / respondents) * 100) : 0;
 
-  const netColor = net > 0.5 ? "text-emerald-700" : (net < -0.5 ? "text-rose-700" : "text-slate-700");
+  let netColor = "text-slate-700";
+  if (net > 0.5) netColor = "text-emerald-700";
+  else if (net < -0.5) netColor = "text-rose-700";
+
+  const signed = v => (v >= 0 ? "+" : "") + v.toFixed(2);
 
   el.innerHTML = `
-    ${statCard("Completion",    `${submittedCount}/${respondents}`, `${completionPct}% submitted`,"")}
-    ${statCard("Avg strengths", `${avgS.toFixed(2)}`, "of 5, across all blocks","text-emerald-700")}
-    ${statCard("Avg weaknesses",`${avgW.toFixed(2)}`, "of 5, across all blocks","text-rose-700")}
-    ${statCard("Net position",  `${net>=0?"+":""}${net.toFixed(2)}`, "strengths minus weaknesses", netColor)}
-    ${statCard("Biggest gap",   escapeHtml(weakest.block.title), `net ${weakest.net>=0?"+":""}${weakest.net.toFixed(2)}`,"text-rose-700")}
+    ${statCard(t("dash.stats.completion"),  `${submittedCount}/${respondents}`,            t("dash.stats.completionSub", { pct: completionPct }), "")}
+    ${statCard(t("dash.stats.avgS"),        avgS.toFixed(2),                                t("dash.stats.avgSub"),       "text-emerald-700")}
+    ${statCard(t("dash.stats.avgW"),        avgW.toFixed(2),                                t("dash.stats.avgSub"),       "text-rose-700")}
+    ${statCard(t("dash.stats.net"),         signed(net),                                    t("dash.stats.netSub"),       netColor)}
+    ${statCard(t("dash.stats.biggestGap"),  escapeHtml(tL(weakest.block.title)),            t("dash.stats.biggestGapSub", { net: signed(weakest.net) }), "text-rose-700")}
   `;
 }
 function statCard(label, big, sub, bigClass) {
@@ -1249,34 +1818,37 @@ function renderBlockMatrix(blockStats) {
   const el = document.getElementById("dashMatrix");
   const haveData = blockStats.some(b => b.sAvg > 0 || b.wAvg > 0);
   if (!haveData) {
-    el.innerHTML = `<div class="text-sm text-slate-400 italic">Will populate once responses come in.</div>`;
+    el.innerHTML = `<div class="text-sm text-slate-400 italic">${t("dash.matrixEmpty")}</div>`;
     return;
   }
-  const sorted = [...blockStats].sort((a,b) => a.net - b.net);  // worst first
+  const sorted = [...blockStats].sort((a,b) => a.net - b.net);
   el.innerHTML = `
     <table class="w-full text-sm">
       <thead class="text-xs uppercase text-slate-500">
         <tr>
-          <th class="text-left py-1">Block</th>
-          <th class="text-left py-1">Area</th>
-          <th class="text-left py-1">Strengths (+)</th>
-          <th class="text-left py-1">Weaknesses (−)</th>
-          <th class="text-center py-1">Net</th>
-          <th class="text-center py-1">Status</th>
+          <th class="text-left py-1">${t("dash.matrixCol.block")}</th>
+          <th class="text-left py-1">${t("dash.matrixCol.area")}</th>
+          <th class="text-left py-1">${t("dash.matrixCol.s")}</th>
+          <th class="text-left py-1">${t("dash.matrixCol.w")}</th>
+          <th class="text-center py-1">${t("dash.matrixCol.net")}</th>
+          <th class="text-center py-1">${t("dash.matrixCol.status")}</th>
         </tr>
       </thead>
       <tbody>
         ${sorted.map(({ block, sAvg, wAvg, net }) => {
           const st = blockStatus(sAvg, wAvg);
+          let netCls = "text-slate-600";
+          if (net > 0) netCls = "text-emerald-700";
+          else if (net < 0) netCls = "text-rose-700";
           return `<tr class="border-t">
             <td class="py-1.5 font-medium">
               <span class="inline-block w-2.5 h-2.5 rounded-sm mr-1.5 align-middle" style="background:${block.color}"></span>
-              ${escapeHtml(block.title)}
+              ${escapeHtml(tL(block.title))}
             </td>
-            <td class="py-1.5 text-xs text-slate-500">${escapeHtml(block.group)}</td>
+            <td class="py-1.5 text-xs text-slate-500">${escapeHtml(tL(block.group))}</td>
             <td class="py-1.5">${miniBar(sAvg, "#16a34a")}</td>
             <td class="py-1.5">${miniBar(wAvg, "#dc2626")}</td>
-            <td class="py-1.5 text-center font-semibold ${net>0?"text-emerald-700":(net<0?"text-rose-700":"text-slate-600")}">${net>=0?"+":""}${net.toFixed(2)}</td>
+            <td class="py-1.5 text-center font-semibold ${netCls}">${net>=0?"+":""}${net.toFixed(2)}</td>
             <td class="py-1.5 text-center"><span class="chip ${st.cls}">${st.label}</span></td>
           </tr>`;
         }).join("")}
@@ -1294,10 +1866,10 @@ function miniBar(v, color) {
 function renderTopPriorities() {
   const el = document.getElementById("dashTopPriorities");
   if (!state.allExternal.length) {
-    el.innerHTML = `<div class="col-span-full bg-white border border-slate-200 rounded-lg p-4 text-sm text-slate-400 italic">No external notes yet.</div>`;
+    el.innerHTML = `<div class="col-span-full bg-white border border-slate-200 rounded-lg p-4 text-sm text-slate-400 italic">${t("dash.noExternal")}</div>`;
     return;
   }
-  const forceLabel = Object.fromEntries(EXTERNAL_FORCES.map(f => [f.key, f.title]));
+  const forceLabel = Object.fromEntries(EXTERNAL_FORCES.map(f => [f.key, tL(f.title)]));
   const rank = (type, limit) => state.allExternal
     .filter(n => n.note_type === type)
     .sort((a,b) => (b.priority||0) - (a.priority||0))
@@ -1312,25 +1884,25 @@ function renderTopPriorities() {
         <div>${escapeHtml(n.note)}</div>
         <div class="text-[10px] text-slate-400">${escapeHtml(forceLabel[n.force_category]||n.force_category)} · ${escapeHtml(n.respondent_name||"")}</div>
       </div>
-    </div>`).join("") : `<div class="italic text-slate-400 text-sm">None yet.</div>`;
+    </div>`).join("") : `<div class="italic text-slate-400 text-sm">${t("dash.noneYet")}</div>`;
 
   el.innerHTML = `
     <div class="bg-white border border-slate-200 rounded-lg p-4">
-      <h3 class="font-semibold text-emerald-700 mb-2">Top opportunities</h3>
+      <h3 class="font-semibold text-emerald-700 mb-2">${t("dash.topOpps")}</h3>
       ${renderList(topOpps, "opportunity")}
     </div>
     <div class="bg-white border border-slate-200 rounded-lg p-4">
-      <h3 class="font-semibold text-rose-700 mb-2">Top threats</h3>
+      <h3 class="font-semibold text-rose-700 mb-2">${t("dash.topThreats")}</h3>
       ${renderList(topThr, "threat")}
     </div>`;
 }
 
-function avgRow(blockKey, sign, idx, text) {
+function avgRow(blockKey, sign, idx) {
   const rows = state.allResponses.filter(x =>
     x.block_key === blockKey && x.statement_sign === sign && x.statement_index === idx && x.score > 0);
   const comments = state.allResponses.filter(x =>
     x.block_key === blockKey && x.statement_sign === sign && x.statement_index === idx && x.comment && x.comment.trim());
-  return { text, avg: avg(rows.map(r => r.score)), n: rows.length, comments };
+  return { text: statementText(blockKey, sign, idx), avg: avg(rows.map(r => r.score)), n: rows.length, comments };
 }
 function avg(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
 function stats(arr) {
@@ -1343,9 +1915,11 @@ function stats(arr) {
 function barWithComments(r, sign) {
   const pct = (r.avg/5)*100;
   const color = sign === "+" ? "#16a34a" : "#dc2626";
+  const plural = r.comments.length > 1;
+  const sSuffix = state.lang === "fr" ? (plural ? "s" : "") : (plural ? "s" : "");
   const commentsHtml = r.comments.length ? `
     <details class="mt-1">
-      <summary class="text-[10px] text-slate-500">${r.comments.length} comment${r.comments.length>1?"s":""}</summary>
+      <summary class="text-[10px] text-slate-500">${t("dash.commentCount", { n: r.comments.length, s: sSuffix })}</summary>
       <div class="mt-1 space-y-1">
         ${r.comments.map(c => `<div class="text-[11px] text-slate-700 border-l-2 border-slate-200 pl-2">
           <span class="italic">"${escapeHtml(c.comment)}"</span>
@@ -1374,24 +1948,27 @@ function noteLine(n) {
 document.getElementById("refreshDash").addEventListener("click", loadDashboard);
 document.getElementById("exportCsv").addEventListener("click", exportCsv);
 document.getElementById("exportJson").addEventListener("click", exportJson);
+document.getElementById("printDash").addEventListener("click", () => window.print());
 
 function exportCsv() {
-  const lines = [["respondent","role","submitted_at","group","block","sign","statement","score","comment"].join(",")];
+  const headerRows = ["respondent","role","submitted_at","group","block","sign","statement","score","comment"];
+  const lines = [headerRows.join(",")];
   const rMap = Object.fromEntries(state.allRespondents.map(r => [r.respondent_token, r]));
+  const rows = [];
   state.allResponses.forEach(r => {
-    const b = SWOT.find(x => x.key===r.block_key);
+    const b = swotBlock(r.block_key);
     const meta = rMap[r.respondent_token] || {};
-    lines.push([
+    rows.push([
       r.respondent_name, r.respondent_role||"", meta.submitted_at||"",
-      b?.group||"", b?.title||r.block_key,
+      b ? b.group.en : "", b ? b.title.en : r.block_key,
       r.statement_sign, q(r.statement_text), r.score, q(r.comment||"")
     ].join(","));
   });
-  lines.push("");
-  lines.push(["respondent","force","type","priority","note"].join(","));
+  rows.push("", ["respondent","force","type","priority","note"].join(","));
   state.allExternal.forEach(n => {
-    lines.push([n.respondent_name, n.force_category, n.note_type, n.priority||"", q(n.note)].join(","));
+    rows.push([n.respondent_name, n.force_category, n.note_type, n.priority||"", q(n.note)].join(","));
   });
+  lines.push(...rows);
   downloadFile("bmc-swot-export.csv", lines.join("\n"));
 }
 function exportJson() {
@@ -1410,7 +1987,7 @@ function downloadFile(name, content) {
   setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
 }
 
-/* ---------- 9. LIVE DASHBOARD POLLING ---------- */
+/* ---------- 12. LIVE DASHBOARD POLLING ---------- */
 let pollTimer = null;
 function startDashboardPolling() {
   stopDashboardPolling();
@@ -1422,15 +1999,16 @@ function startDashboardPolling() {
 }
 function stopDashboardPolling() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
 
-/* ---------- 10. UTIL ---------- */
+/* ---------- 13. UTIL ---------- */
 function escapeHtml(s) {
   return (s == null ? "" : String(s))
     .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
     .replaceAll('"',"&quot;").replaceAll("'","&#039;");
 }
 
-/* ---------- 11. BOOT ---------- */
+/* ---------- 14. BOOT ---------- */
 (async function init() {
+  applyStaticI18n();
   renderSetup();
   connectSupabase();
   await refreshAssessments();
