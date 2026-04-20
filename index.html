@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Business Model Canvas — SWOT Assessment</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+  body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  .dot {
+    width: 22px; height: 22px; border-radius: 9999px;
+    border: 2px solid #9ca3af; cursor: pointer;
+    transition: transform .08s ease, background-color .1s ease;
+  }
+  .dot:hover { transform: scale(1.12); }
+  .dot.filled-plus  { background-color: #16a34a; border-color: #15803d; }
+  .dot.filled-minus { background-color: #dc2626; border-color: #b91c1c; }
+  .block-card { break-inside: avoid; }
+  .bar { height: 10px; border-radius: 6px; background: #e5e7eb; overflow: hidden; }
+  .bar > span { display: block; height: 100%; }
+  .chip { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; }
+  details > summary { cursor: pointer; }
+  .heatcell { width: 100%; height: 44px; display: flex; align-items: center; justify-content: center;
+               color: white; font-weight: 600; border-radius: 4px; font-size: 12px; }
+  @media print {
+    .no-print { display: none !important; }
+    .block-card { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+<header class="bg-white border-b border-slate-200 sticky top-0 z-30">
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-md bg-slate-900 text-white grid place-items-center font-bold">BM</div>
+      <div>
+        <div class="font-semibold leading-tight">Business Model Canvas — SWOT Assessment</div>
+        <div class="text-xs text-slate-500">After Osterwalder &amp; Pigneur, <em>Business Model Generation</em> (2010)</div>
+      </div>
+    </div>
+    <nav class="flex gap-1 no-print">
+      <button data-view="setup"      class="nav-btn px-3 py-1.5 rounded text-sm">Setup</button>
+      <button data-view="assess"     class="nav-btn px-3 py-1.5 rounded text-sm">Assess</button>
+      <button data-view="external"   class="nav-btn px-3 py-1.5 rounded text-sm">External SWOT</button>
+      <button data-view="dashboard"  id="navDashboard" class="nav-btn px-3 py-1.5 rounded text-sm hidden">Dashboard</button>
+    </nav>
+  </div>
+  <div id="bannerModeRow" class="max-w-6xl mx-auto px-4 pb-2 text-xs"></div>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 py-6">
+
+  <!-- SETUP VIEW -->
+  <section id="view-setup" class="view">
+    <h1 class="text-2xl font-bold mb-1">Welcome</h1>
+    <p class="text-slate-600 mb-6">Configure your session. Everyone on your exec team opens this same page and fills it in; results aggregate live in the Dashboard.</p>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="bg-white border border-slate-200 rounded-lg p-5">
+        <h2 class="font-semibold mb-3">1. Connect Supabase (for live sharing)</h2>
+        <p class="text-sm text-slate-600 mb-3">Paste your Supabase project URL and anon key. See SETUP.md for the 5-minute setup. Leave blank to run in <b>local demo mode</b> (single-user, saved in your browser).</p>
+        <label class="block text-sm font-medium mt-2">Supabase URL</label>
+        <input id="cfgUrl"     class="w-full border rounded px-3 py-2 text-sm" placeholder="https://xxxxx.supabase.co">
+        <label class="block text-sm font-medium mt-3">Supabase anon key</label>
+        <input id="cfgKey"     class="w-full border rounded px-3 py-2 text-sm" placeholder="eyJhbGciOi...">
+        <div class="flex gap-2 mt-4">
+          <button id="saveConfig" class="bg-slate-900 text-white text-sm px-3 py-2 rounded">Save &amp; connect</button>
+          <button id="clearConfig" class="text-sm px-3 py-2 rounded border">Clear</button>
+        </div>
+        <div id="connStatus" class="text-xs mt-2 text-slate-500"></div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-lg p-5">
+        <h2 class="font-semibold mb-3">2. You</h2>
+        <label class="block text-sm font-medium">Your name</label>
+        <input id="userName" class="w-full border rounded px-3 py-2 text-sm" placeholder="e.g. Maxime P.">
+        <label class="block text-sm font-medium mt-3">Role (optional)</label>
+        <input id="userRole" class="w-full border rounded px-3 py-2 text-sm" placeholder="e.g. CEO">
+
+        <h2 class="font-semibold mt-5 mb-2">3. Assessment session</h2>
+        <label class="block text-sm font-medium">Select or create a session</label>
+        <div class="flex gap-2 mt-1">
+          <select id="assessmentSelect" class="w-full border rounded px-2 py-2 text-sm"></select>
+          <button id="refreshAssessments" class="text-sm px-3 py-2 rounded border">↻</button>
+        </div>
+        <div class="flex gap-2 mt-2">
+          <input id="newAssessmentName" class="flex-1 border rounded px-3 py-2 text-sm" placeholder="New session name, e.g. Q2 2026 review">
+          <button id="createAssessment" class="bg-slate-900 text-white text-sm px-3 py-2 rounded">Create</button>
+        </div>
+        <div class="mt-3 text-xs text-slate-500">
+          Already have an <b>owner key</b> for this session from another device?
+          <div class="flex gap-2 mt-1">
+            <input id="ownerKeyInput" class="flex-1 border rounded px-2 py-1 text-xs" placeholder="Paste owner key to unlock dashboard">
+            <button id="saveOwnerKey" class="text-xs px-2 py-1 rounded border">Unlock</button>
+          </div>
+        </div>
+
+        <button id="saveUserGo" class="mt-5 w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 rounded">Save &amp; begin assessment →</button>
+      </div>
+    </div>
+
+    <div class="mt-6 bg-amber-50 border border-amber-200 text-amber-900 rounded p-4 text-sm">
+      <b>Note on statements.</b> The +/− statements below are adapted from <em>Business Model Generation</em> (pp. 216–225). Cross-check against the book and edit the <code>SWOT</code> object at the top of the HTML file if you need exact wording — statements live in one place and are easy to tune.
+    </div>
+  </section>
+
+  <!-- ASSESS VIEW -->
+  <section id="view-assess" class="view hidden">
+    <div class="flex items-end justify-between mb-4 flex-wrap gap-2">
+      <div>
+        <h1 class="text-2xl font-bold">SWOT assessment — 9 building blocks</h1>
+        <p class="text-slate-600 text-sm">For each statement, click a dot 1→5 to reflect how strongly it applies to your business today. Green dots = strengths (+), red dots = weaknesses (−).</p>
+      </div>
+      <div class="text-right">
+        <div id="progressLabel" class="text-sm text-slate-500"></div>
+        <div class="bar w-56"><span id="progressBar" class="bg-emerald-500" style="width:0%"></span></div>
+      </div>
+    </div>
+
+    <div id="assessContainer" class="grid md:grid-cols-2 gap-5"></div>
+
+    <div class="mt-6 flex justify-between items-center no-print">
+      <button class="nav-btn-link text-sm underline" data-view="setup">← Back to setup</button>
+      <button class="nav-btn-link bg-slate-900 text-white text-sm px-4 py-2 rounded" data-view="external">Next: External SWOT →</button>
+    </div>
+  </section>
+
+  <!-- EXTERNAL VIEW -->
+  <section id="view-external" class="view hidden">
+    <h1 class="text-2xl font-bold">Environmental scan — Opportunities &amp; Threats</h1>
+    <div class="bg-sky-50 border border-sky-200 text-sky-900 rounded p-4 text-sm mb-5">
+      <p class="mb-2"><b>What this is.</b> A classic SWOT has four quadrants. The 9-block rating you just did gives you the <b>S</b>trengths and <b>W</b>eaknesses — an internal x-ray of your business model. This tab is for the other half: <b>O</b>pportunities and <b>T</b>hreats, which come from <em>outside</em> your business.</p>
+      <p class="mb-2">Osterwalder &amp; Pigneur structure that external view around four "forces" that surround the Canvas (pp. 200–211). Go through each one and list things you'd want the team to act on (opportunities) or watch for (threats), with a 1–5 priority.</p>
+      <ul class="list-disc ml-5 text-xs text-sky-900/90">
+        <li><b>Market forces</b> — shifts in customer needs, new segments emerging, switching costs changing, revenue attractiveness.</li>
+        <li><b>Industry forces</b> — competitor moves, new entrants, substitute offerings, supplier/value-chain dynamics, stakeholders.</li>
+        <li><b>Key trends</b> — technology, regulatory, societal/cultural, socioeconomic.</li>
+        <li><b>Macroeconomic forces</b> — global conditions, capital markets, commodity prices, economic infrastructure.</li>
+      </ul>
+      <p class="mt-2 text-xs text-sky-900/80">Together with the internal ratings, this produces a complete SWOT for your business model rather than just half of it.</p>
+    </div>
+    <div id="externalContainer" class="grid md:grid-cols-2 gap-5"></div>
+    <div class="mt-6 flex justify-between items-center no-print">
+      <button class="nav-btn-link text-sm underline" data-view="assess">← Back to blocks</button>
+      <button class="nav-btn-link bg-slate-900 text-white text-sm px-4 py-2 rounded" data-view="dashboard">See compiled dashboard →</button>
+    </div>
+  </section>
+
+  <!-- DASHBOARD VIEW -->
+  <section id="view-dashboard" class="view hidden">
+    <div class="flex items-end justify-between mb-4 flex-wrap gap-2">
+      <div>
+        <h1 class="text-2xl font-bold">Compiled dashboard</h1>
+        <p id="dashSubtitle" class="text-slate-600 text-sm"></p>
+      </div>
+      <div class="flex gap-2 no-print">
+        <button id="refreshDash"   class="text-sm px-3 py-2 rounded border">↻ Refresh</button>
+        <button id="exportCsv"     class="text-sm px-3 py-2 rounded border">Export CSV</button>
+        <button id="exportJson"    class="text-sm px-3 py-2 rounded border">Export JSON</button>
+        <button onclick="window.print()" class="text-sm px-3 py-2 rounded border">Print</button>
+      </div>
+    </div>
+
+    <div class="bg-white border border-slate-200 rounded-lg p-4 mb-6">
+      <h2 class="font-semibold mb-2">Respondents</h2>
+      <div id="respondentsList" class="text-sm text-slate-700"></div>
+    </div>
+
+    <h2 class="text-lg font-semibold mb-3">Per-block profile (team average)</h2>
+    <div id="dashBlocks" class="grid md:grid-cols-2 gap-5"></div>
+
+    <h2 class="text-lg font-semibold mt-8 mb-3">Divergence — where the team disagrees most</h2>
+    <div id="dashDivergence" class="bg-white border border-slate-200 rounded-lg p-4"></div>
+
+    <h2 class="text-lg font-semibold mt-8 mb-3">External SWOT — all notes</h2>
+    <div id="dashExternal" class="grid md:grid-cols-2 gap-5"></div>
+  </section>
+
+</main>
+
+<footer class="max-w-6xl mx-auto px-4 py-6 text-xs text-slate-400">
+  Adapted from Alexander Osterwalder &amp; Yves Pigneur, <em>Business Model Generation</em> (Wiley, 2010). This tool is an independent implementation; statement wording is a paraphrase intended for internal use.
+</footer>
+
+<script>
+/* ============================================================
+   BMC SWOT — single-file web app
+   ============================================================ */
+
+/* ---------- 1. STATEMENTS (edit here if you want the exact book wording) ---------- */
+const SWOT = [
+  // Value Proposition
+  { key: "value-propositions", title: "Value Propositions", group: "Value Proposition",
+    color: "#93c5fd",
+    strengths: [
+      "Our value propositions are well aligned with customer needs.",
+      "Our value propositions have strong network effects.",
+      "There are strong synergies between our products and services.",
+      "Our customers are very satisfied."
+    ],
+    weaknesses: [
+      "Our value propositions and customer needs are misaligned.",
+      "There are no network effects around our value propositions.",
+      "There are no synergies between our products and services.",
+      "Substantial parts of our value propositions could easily be copied."
+    ]
+  },
+  // Cost / Revenue
+  { key: "revenue-streams", title: "Revenue Streams", group: "Cost / Revenue",
+    color: "#86efac",
+    strengths: [
+      "We benefit from strong, sustainable margins.",
+      "Our revenues are predictable.",
+      "We have recurring revenue streams and high repeat-purchase rates.",
+      "Our revenue streams are diversified.",
+      "We collect revenues before we incur costs.",
+      "We charge for what customers are really willing to pay for.",
+      "Our pricing mechanisms capture full willingness to pay."
+    ],
+    weaknesses: [
+      "Our margins are unsustainable.",
+      "Our revenues are unpredictable.",
+      "Revenues are transactional, with few recurring streams.",
+      "We depend on a single revenue stream.",
+      "We incur costs long before collecting revenues.",
+      "We charge for things customers aren’t really willing to pay for.",
+      "Our pricing mechanisms leave significant money on the table."
+    ]
+  },
+  { key: "cost-structure", title: "Cost Structure", group: "Cost / Revenue",
+    color: "#86efac",
+    strengths: [
+      "Our costs are predictable.",
+      "Our cost structure is correctly matched to our business model.",
+      "Our operations are cost-efficient.",
+      "We benefit from economies of scale."
+    ],
+    weaknesses: [
+      "Our costs are unpredictable.",
+      "Our cost structure is mismatched with our business model.",
+      "Our operations are cost-inefficient.",
+      "We fail to benefit from economies of scale."
+    ]
+  },
+  // Infrastructure
+  { key: "key-resources", title: "Key Resources", group: "Infrastructure",
+    color: "#fde68a",
+    strengths: [
+      "Our key resources are difficult for competitors to replicate.",
+      "Resource needs are predictable.",
+      "We deploy key resources in the right amount at the right time."
+    ],
+    weaknesses: [
+      "Our key resources are easily replicable by competitors.",
+      "We have insufficient key resources.",
+      "Resource needs are unpredictable."
+    ]
+  },
+  { key: "key-activities", title: "Key Activities", group: "Infrastructure",
+    color: "#fde68a",
+    strengths: [
+      "We execute key activities efficiently.",
+      "Our key activities are difficult to copy.",
+      "Execution quality is high.",
+      "We strike the right balance between in-house and outsourced execution."
+    ],
+    weaknesses: [
+      "We execute key activities inefficiently.",
+      "Our key activities are easy to copy.",
+      "Execution quality is low.",
+      "We have a poor balance between in-house and outsourced execution."
+    ]
+  },
+  { key: "key-partnerships", title: "Key Partnerships", group: "Infrastructure",
+    color: "#fde68a",
+    strengths: [
+      "We are focused and work with partners when necessary.",
+      "We enjoy strong working relationships with our key partners."
+    ],
+    weaknesses: [
+      "We are unfocused and fail to work with partners when we should.",
+      "Our relationships with partners are conflict-ridden."
+    ]
+  },
+  // Customer Interface
+  { key: "customer-segments", title: "Customer Segments", group: "Customer Interface",
+    color: "#f9a8d4",
+    strengths: [
+      "Customer churn rates are low.",
+      "Our customer base is well segmented.",
+      "We are continuously acquiring new customers."
+    ],
+    weaknesses: [
+      "Customer churn rates are high.",
+      "Our customer base is poorly segmented.",
+      "We are not acquiring new customers."
+    ]
+  },
+  { key: "channels", title: "Channels", group: "Customer Interface",
+    color: "#f9a8d4",
+    strengths: [
+      "Our channels are very efficient.",
+      "Our channels are very effective.",
+      "Channel reach is strong among customers.",
+      "Customers can easily see and use our channels.",
+      "Channels are strongly integrated across stages.",
+      "Channels provide economies of scope.",
+      "Channels are well matched to our customer segments."
+    ],
+    weaknesses: [
+      "Our channels are inefficient.",
+      "Our channels are ineffective.",
+      "Our channel reach is weak.",
+      "Customers barely notice our channels.",
+      "Channels are poorly integrated across stages.",
+      "Channels provide no economies of scope.",
+      "Channels are poorly matched to our customer segments."
+    ]
+  },
+  { key: "customer-relationships", title: "Customer Relationships", group: "Customer Interface",
+    color: "#f9a8d4",
+    strengths: [
+      "Our customer relationships are strong.",
+      "Relationship quality correctly matches each customer segment.",
+      "Relationships bind customers through high switching costs.",
+      "Our brand is strong."
+    ],
+    weaknesses: [
+      "Our customer relationships are weak.",
+      "Relationship quality doesn’t match customer segments.",
+      "Customer switching costs are low.",
+      "Our brand is weak."
+    ]
+  }
+];
+
+const EXTERNAL_FORCES = [
+  { key: "market",    title: "Market forces",       desc: "Market issues, segments, needs/demands, switching costs, revenue attractiveness." },
+  { key: "industry",  title: "Industry forces",     desc: "Competitors, new entrants, substitutes, suppliers & value-chain actors, stakeholders." },
+  { key: "trends",    title: "Key trends",          desc: "Technology, regulatory, societal &amp; cultural, socioeconomic." },
+  { key: "macro",     title: "Macroeconomic forces",desc: "Global market conditions, capital markets, commodities &amp; resources, economic infrastructure." }
+];
+
+/* ---------- 2. APP STATE ---------- */
+const state = {
+  cfg: JSON.parse(localStorage.getItem("bmc_swot_cfg") || "{}"),
+  user: JSON.parse(localStorage.getItem("bmc_swot_user") || "{}"),
+  assessmentId: localStorage.getItem("bmc_swot_assessment") || null,
+  assessmentName: localStorage.getItem("bmc_swot_assessment_name") || null,
+  ownerKeys: JSON.parse(localStorage.getItem("bmc_swot_owner_keys") || "{}"), // { [assessmentId]: "key" }
+  responses: {},
+  externalNotes: [],
+  allResponses: [],
+  allExternal: [],
+  supabase: null,
+  mode: "local"
+};
+function currentOwnerKey() { return state.ownerKeys[state.assessmentId] || null; }
+function isOwner() {
+  // Local demo mode: the only user is always the owner.
+  if (state.mode === "local") return true;
+  return !!currentOwnerKey();
+}
+function saveOwnerKey(assessmentId, key) {
+  state.ownerKeys[assessmentId] = key;
+  localStorage.setItem("bmc_swot_owner_keys", JSON.stringify(state.ownerKeys));
+}
+function updateOwnerNav() {
+  const btn = document.getElementById("navDashboard");
+  if (!btn) return;
+  btn.classList.toggle("hidden", !isOwner());
+}
+
+/* ---------- 3. SUPABASE ---------- */
+function connectSupabase() {
+  if (state.cfg.url && state.cfg.key && window.supabase) {
+    try {
+      state.supabase = window.supabase.createClient(state.cfg.url, state.cfg.key);
+      state.mode = "supabase";
+      renderBanner();
+      return true;
+    } catch (e) { console.warn("Supabase connect failed", e); }
+  }
+  state.mode = "local";
+  renderBanner();
+  return false;
+}
+
+function renderBanner() {
+  const row = document.getElementById("bannerModeRow");
+  const ownerChip = isOwner()
+    ? `<span class="chip bg-indigo-100 text-indigo-800 ml-2">★ Owner</span>` : "";
+  if (state.mode === "supabase") {
+    row.innerHTML = `<span class="chip bg-emerald-100 text-emerald-800">● Live (Supabase)</span>${ownerChip}
+      <span class="text-slate-500 ml-2">Session: <b>${escapeHtml(state.assessmentName || "—")}</b> · User: <b>${escapeHtml(state.user.name || "—")}</b></span>`;
+  } else {
+    row.innerHTML = `<span class="chip bg-amber-100 text-amber-800">● Local demo mode</span>${ownerChip}
+      <span class="text-slate-500 ml-2">Configure Supabase in Setup to enable team sharing. User: <b>${escapeHtml(state.user.name || "—")}</b></span>`;
+  }
+  updateOwnerNav();
+}
+
+/* ---------- 4. VIEW SWITCHING ---------- */
+function showView(name) {
+  if (name === "dashboard" && !isOwner()) {
+    alert("The dashboard is visible only to the session owner. Ask Max (the session creator) for the owner key if you need access.");
+    name = "assess";
+  }
+  document.querySelectorAll(".view").forEach(el => el.classList.add("hidden"));
+  const el = document.getElementById("view-" + name);
+  if (el) el.classList.remove("hidden");
+  document.querySelectorAll(".nav-btn").forEach(b => {
+    b.classList.toggle("bg-slate-900", b.dataset.view === name);
+    b.classList.toggle("text-white", b.dataset.view === name);
+  });
+  if (name === "assess")    renderAssess();
+  if (name === "external")  renderExternal();
+  if (name === "dashboard") loadDashboard();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+document.querySelectorAll(".nav-btn, .nav-btn-link").forEach(b => {
+  b.addEventListener("click", () => showView(b.dataset.view));
+});
+
+/* ---------- 5. SETUP VIEW ---------- */
+function renderSetup() {
+  document.getElementById("cfgUrl").value    = state.cfg.url || "";
+  document.getElementById("cfgKey").value    = state.cfg.key || "";
+  document.getElementById("userName").value  = state.user.name || "";
+  document.getElementById("userRole").value  = state.user.role || "";
+}
+
+document.getElementById("saveConfig").addEventListener("click", async () => {
+  state.cfg = {
+    url: document.getElementById("cfgUrl").value.trim(),
+    key: document.getElementById("cfgKey").value.trim()
+  };
+  localStorage.setItem("bmc_swot_cfg", JSON.stringify(state.cfg));
+  const ok = connectSupabase();
+  document.getElementById("connStatus").textContent = ok ? "Connected." : "Not configured — running in local demo mode.";
+  await refreshAssessments();
+});
+document.getElementById("clearConfig").addEventListener("click", () => {
+  localStorage.removeItem("bmc_swot_cfg");
+  state.cfg = {}; state.supabase = null; state.mode = "local";
+  renderSetup(); renderBanner();
+  document.getElementById("connStatus").textContent = "Configuration cleared.";
+});
+
+async function refreshAssessments() {
+  const sel = document.getElementById("assessmentSelect");
+  sel.innerHTML = "";
+  if (state.mode !== "supabase") {
+    sel.innerHTML = `<option value="local">Local demo session</option>`;
+    state.assessmentId = "local";
+    state.assessmentName = "Local demo session";
+    renderBanner();
+    return;
+  }
+  const { data, error } = await state.supabase.from("assessments_public").select("*").order("created_at", { ascending: false });
+  if (error) { sel.innerHTML = `<option>Error: ${error.message}</option>`; return; }
+  if (!data.length) { sel.innerHTML = `<option value="">— none yet, create one →</option>`; return; }
+  data.forEach(a => {
+    const o = document.createElement("option");
+    const owned = !!state.ownerKeys[a.id];
+    o.value = a.id; o.textContent = (owned ? "★ " : "") + a.name + (a.closed ? " (closed)" : "");
+    if (a.id === state.assessmentId) o.selected = true;
+    sel.appendChild(o);
+  });
+  sel.onchange = () => {
+    state.assessmentId = sel.value;
+    state.assessmentName = sel.options[sel.selectedIndex].textContent.replace(/^★ /, "");
+    localStorage.setItem("bmc_swot_assessment", state.assessmentId);
+    localStorage.setItem("bmc_swot_assessment_name", state.assessmentName);
+    renderBanner();
+  };
+}
+document.getElementById("refreshAssessments").addEventListener("click", refreshAssessments);
+document.getElementById("createAssessment").addEventListener("click", async () => {
+  const name = document.getElementById("newAssessmentName").value.trim();
+  if (!name) return alert("Give the session a name.");
+  if (state.mode !== "supabase") return alert("Connect Supabase first (left panel).");
+  const creator = document.getElementById("userName").value.trim() || state.user.name || null;
+  const { data, error } = await state.supabase.rpc("create_assessment", {
+    p_name: name, p_created_by: creator
+  });
+  if (error) return alert("Error: " + error.message);
+  const row = Array.isArray(data) ? data[0] : data;
+  state.assessmentId = row.id;
+  state.assessmentName = row.name;
+  saveOwnerKey(row.id, row.owner_key);
+  localStorage.setItem("bmc_swot_assessment", state.assessmentId);
+  localStorage.setItem("bmc_swot_assessment_name", state.assessmentName);
+  document.getElementById("newAssessmentName").value = "";
+  await refreshAssessments();
+  renderBanner();
+
+  // Show the owner key once — user MUST save this to access the dashboard elsewhere.
+  showOwnerKeyModal(row.owner_key, row.name);
+});
+
+function showOwnerKeyModal(key, sessionName) {
+  const wrap = document.createElement("div");
+  wrap.className = "fixed inset-0 bg-black/50 z-50 grid place-items-center p-4";
+  wrap.innerHTML = `
+    <div class="bg-white rounded-lg max-w-lg w-full p-5 shadow-xl">
+      <h3 class="text-lg font-bold mb-1">Session created: ${escapeHtml(sessionName)}</h3>
+      <p class="text-sm text-slate-600 mb-3">Here is your <b>owner key</b>. Only whoever holds this key can see the compiled dashboard for this session. It is stored in your browser automatically — but you should also save a copy somewhere (password manager, etc.) in case you need to access the dashboard from another device.</p>
+      <div class="flex gap-2 mb-3">
+        <input id="ownerKeyDisplay" readonly value="${escapeHtml(key)}" class="flex-1 border rounded px-3 py-2 text-sm font-mono bg-slate-50">
+        <button id="copyOwnerKey" class="bg-slate-900 text-white text-sm px-3 py-2 rounded">Copy</button>
+      </div>
+      <p class="text-xs text-slate-500 mb-3">Do <b>not</b> share this key with respondents. Give them only the app URL and the session name.</p>
+      <div class="text-right">
+        <button id="dismissOwnerKey" class="bg-emerald-600 text-white font-semibold px-4 py-2 rounded">I've saved it — close</button>
+      </div>
+    </div>`;
+  document.body.appendChild(wrap);
+  wrap.querySelector("#copyOwnerKey").onclick = () => {
+    navigator.clipboard.writeText(key);
+    wrap.querySelector("#copyOwnerKey").textContent = "Copied!";
+  };
+  wrap.querySelector("#dismissOwnerKey").onclick = () => wrap.remove();
+}
+
+// Manual owner-key entry for accessing dashboard on a different device
+document.getElementById("saveOwnerKey").addEventListener("click", async () => {
+  if (state.mode !== "supabase") return alert("Connect Supabase first, then select the session.");
+  if (!state.assessmentId || state.assessmentId === "local") return alert("Pick a session from the dropdown first.");
+  const key = document.getElementById("ownerKeyInput").value.trim();
+  if (!key) return alert("Paste your owner key.");
+  // Validate by calling the dashboard RPC with a quick probe.
+  const { error } = await state.supabase.rpc("get_dashboard_responses", {
+    p_assessment_id: state.assessmentId, p_owner_key: key
+  });
+  if (error) return alert("That key doesn't match this session.");
+  saveOwnerKey(state.assessmentId, key);
+  document.getElementById("ownerKeyInput").value = "";
+  renderBanner();
+  startDashboardPolling();
+  alert("Owner key accepted. The Dashboard tab is now visible.");
+});
+document.getElementById("saveUserGo").addEventListener("click", async () => {
+  state.user = {
+    name: document.getElementById("userName").value.trim(),
+    role: document.getElementById("userRole").value.trim()
+  };
+  if (!state.user.name) return alert("Please enter your name.");
+  localStorage.setItem("bmc_swot_user", JSON.stringify(state.user));
+  if (state.mode === "supabase") {
+    if (!state.assessmentId || state.assessmentId === "local") return alert("Select or create an assessment session.");
+    await loadMyResponses();
+    await loadMyExternal();
+    if (isOwner()) startDashboardPolling();
+  }
+  renderBanner();
+  showView("assess");
+});
+
+/* ---------- 6. ASSESSMENT VIEW ---------- */
+function rKey(blockKey, sign, idx) { return `${blockKey}|${sign}|${idx}`; }
+
+function renderAssess() {
+  const container = document.getElementById("assessContainer");
+  container.innerHTML = "";
+  SWOT.forEach(block => {
+    const card = document.createElement("div");
+    card.className = "block-card bg-white border border-slate-200 rounded-lg p-4";
+    card.innerHTML = `
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <div class="text-xs text-slate-500 uppercase tracking-wide">${block.group}</div>
+          <div class="font-semibold text-lg">${block.title}</div>
+        </div>
+        <div class="w-6 h-6 rounded" style="background:${block.color}"></div>
+      </div>
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <div class="text-xs font-semibold text-emerald-700">Strengths (+)</div>
+          <div class="text-[10px] text-slate-400">1 &nbsp;&nbsp; 2 &nbsp;&nbsp; 3 &nbsp;&nbsp; 4 &nbsp;&nbsp; 5</div>
+        </div>
+        <div class="space-y-2 mb-4">
+          ${block.strengths.map((s,i)=>rowHTML(block.key,"+",i,s)).join("")}
+        </div>
+        <div class="flex items-center justify-between mb-1">
+          <div class="text-xs font-semibold text-rose-700">Weaknesses (−)</div>
+          <div class="text-[10px] text-slate-400">1 &nbsp;&nbsp; 2 &nbsp;&nbsp; 3 &nbsp;&nbsp; 4 &nbsp;&nbsp; 5</div>
+        </div>
+        <div class="space-y-2">
+          ${block.weaknesses.map((s,i)=>rowHTML(block.key,"-",i,s)).join("")}
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  // Bind dot clicks
+  container.querySelectorAll(".dot").forEach(d => {
+    d.addEventListener("click", onDotClick);
+  });
+  // Bind comment inputs
+  container.querySelectorAll("textarea.comment").forEach(t => {
+    t.addEventListener("blur", onCommentBlur);
+  });
+
+  // Restore any existing scores
+  Object.entries(state.responses).forEach(([k, v]) => paintDots(k, v.score));
+  updateProgress();
+}
+
+function rowHTML(blockKey, sign, idx, text) {
+  const id = rKey(blockKey, sign, idx);
+  const signClass = sign === "+" ? "filled-plus" : "filled-minus";
+  return `
+    <div class="grid grid-cols-[1fr_auto] gap-3 items-start" data-row="${id}">
+      <div>
+        <div class="text-sm leading-snug">${text}</div>
+        <textarea class="comment mt-1 w-full text-xs border rounded px-2 py-1" rows="1"
+          placeholder="Optional comment…" data-id="${id}"></textarea>
+      </div>
+      <div class="flex gap-1.5 pt-0.5" data-dots="${id}" data-sign="${sign}">
+        ${[1,2,3,4,5].map(n => `<div class="dot" data-n="${n}" data-id="${id}" data-sign="${sign}"></div>`).join("")}
+      </div>
+    </div>`;
+}
+
+function onDotClick(e) {
+  const t = e.currentTarget;
+  const id = t.dataset.id;
+  const n = +t.dataset.n;
+  const sign = t.dataset.sign;
+  const current = state.responses[id]?.score || 0;
+  const score = (current === n) ? 0 : n; // click same dot to clear
+  state.responses[id] = { ...(state.responses[id] || {}), score, sign };
+  paintDots(id, score);
+  updateProgress();
+  persistResponse(id);
+}
+function paintDots(id, score) {
+  const row = document.querySelector(`[data-dots="${id}"]`);
+  if (!row) return;
+  const sign = row.dataset.sign;
+  row.querySelectorAll(".dot").forEach(d => {
+    d.classList.remove("filled-plus","filled-minus");
+    if (+d.dataset.n <= score && score > 0) {
+      d.classList.add(sign === "+" ? "filled-plus" : "filled-minus");
+    }
+  });
+}
+function onCommentBlur(e) {
+  const id = e.currentTarget.dataset.id;
+  const txt = e.currentTarget.value;
+  state.responses[id] = { ...(state.responses[id] || { score: 0 }), comment: txt };
+  persistResponse(id);
+}
+
+function updateProgress() {
+  const total = SWOT.reduce((a,b) => a + b.strengths.length + b.weaknesses.length, 0);
+  const done  = Object.values(state.responses).filter(r => (r.score||0) > 0).length;
+  document.getElementById("progressLabel").textContent = `${done} / ${total} rated`;
+  document.getElementById("progressBar").style.width = `${Math.round(done/total*100)}%`;
+}
+
+async function persistResponse(id) {
+  if (state.mode !== "supabase") {
+    localStorage.setItem("bmc_swot_responses_" + (state.assessmentId||"local"), JSON.stringify(state.responses));
+    return;
+  }
+  const [blockKey, sign, idxStr] = id.split("|");
+  const idx = +idxStr;
+  const block = SWOT.find(b => b.key === blockKey);
+  const text  = sign === "+" ? block.strengths[idx] : block.weaknesses[idx];
+  const r = state.responses[id];
+  const payload = {
+    assessment_id: state.assessmentId,
+    respondent_name: state.user.name,
+    respondent_role: state.user.role || null,
+    block_key: blockKey,
+    statement_sign: sign,
+    statement_index: idx,
+    statement_text: text,
+    score: r.score || 0,
+    comment: r.comment || null,
+    updated_at: new Date().toISOString()
+  };
+  const { error } = await state.supabase.from("responses").upsert(payload, {
+    onConflict: "assessment_id,respondent_name,block_key,statement_sign,statement_index"
+  });
+  if (error) console.warn(error);
+}
+
+async function loadMyResponses() {
+  if (state.mode !== "supabase") {
+    state.responses = JSON.parse(localStorage.getItem("bmc_swot_responses_" + (state.assessmentId||"local")) || "{}");
+    return;
+  }
+  const { data, error } = await state.supabase.rpc("get_my_responses", {
+    p_assessment_id: state.assessmentId, p_respondent_name: state.user.name
+  });
+  if (error) { console.warn(error); return; }
+  state.responses = {};
+  (data||[]).forEach(r => {
+    state.responses[rKey(r.block_key, r.statement_sign, r.statement_index)] =
+      { score: r.score, comment: r.comment, sign: r.statement_sign };
+  });
+}
+
+/* ---------- 7. EXTERNAL SWOT VIEW ---------- */
+function renderExternal() {
+  const container = document.getElementById("externalContainer");
+  container.innerHTML = "";
+  EXTERNAL_FORCES.forEach(f => {
+    const wrap = document.createElement("div");
+    wrap.className = "bg-white border border-slate-200 rounded-lg p-4";
+    wrap.innerHTML = `
+      <div class="mb-2">
+        <div class="font-semibold">${f.title}</div>
+        <div class="text-xs text-slate-500">${f.desc}</div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <div class="text-xs font-semibold text-emerald-700 mb-1">Opportunities</div>
+          <div class="notes-list space-y-2" data-force="${f.key}" data-type="opportunity"></div>
+          <div class="flex gap-1 mt-2">
+            <input type="text" class="flex-1 border rounded px-2 py-1 text-xs" placeholder="Add opportunity…" data-force="${f.key}" data-type="opportunity">
+            <select class="border rounded text-xs priority-select">
+              <option value="3">3</option><option value="1">1</option><option value="2">2</option><option value="4">4</option><option value="5">5</option>
+            </select>
+            <button class="add-note bg-emerald-600 text-white text-xs px-2 rounded" data-force="${f.key}" data-type="opportunity">+</button>
+          </div>
+        </div>
+        <div>
+          <div class="text-xs font-semibold text-rose-700 mb-1">Threats</div>
+          <div class="notes-list space-y-2" data-force="${f.key}" data-type="threat"></div>
+          <div class="flex gap-1 mt-2">
+            <input type="text" class="flex-1 border rounded px-2 py-1 text-xs" placeholder="Add threat…" data-force="${f.key}" data-type="threat">
+            <select class="border rounded text-xs priority-select">
+              <option value="3">3</option><option value="1">1</option><option value="2">2</option><option value="4">4</option><option value="5">5</option>
+            </select>
+            <button class="add-note bg-rose-600 text-white text-xs px-2 rounded" data-force="${f.key}" data-type="threat">+</button>
+          </div>
+        </div>
+      </div>`;
+    container.appendChild(wrap);
+  });
+  container.querySelectorAll(".add-note").forEach(b => b.addEventListener("click", onAddNote));
+  loadMyExternal();
+}
+
+async function onAddNote(e) {
+  const btn = e.currentTarget;
+  const force = btn.dataset.force;
+  const type  = btn.dataset.type;
+  const cell  = btn.parentElement;
+  const input = cell.querySelector("input");
+  const prio  = +cell.querySelector("select").value;
+  const txt   = input.value.trim();
+  if (!txt) return;
+  const note = {
+    id: (crypto.randomUUID ? crypto.randomUUID() : "loc-" + Date.now() + "-" + Math.random().toString(36).slice(2)),
+    force, type, note: txt, priority: prio, respondent_name: state.user.name
+  };
+  if (state.mode === "supabase") {
+    // Can't .select().single() here — anon is blocked from SELECTing external_notes
+    // by RLS. Insert only, then reload via RPC to refresh the local list.
+    const { error } = await state.supabase.from("external_notes").insert({
+      assessment_id: state.assessmentId,
+      respondent_name: state.user.name,
+      force_category: force,
+      note_type: type,
+      note: txt,
+      priority: prio
+    });
+    if (error) return alert(error.message);
+    input.value = "";
+    await loadMyExternal();
+    return;
+  } else {
+    state.externalNotes.push(note);
+    localStorage.setItem("bmc_swot_external_" + (state.assessmentId||"local"), JSON.stringify(state.externalNotes));
+  }
+  input.value = "";
+  paintExternalNotes();
+}
+
+async function loadMyExternal() {
+  if (state.mode !== "supabase") {
+    state.externalNotes = JSON.parse(localStorage.getItem("bmc_swot_external_" + (state.assessmentId||"local")) || "[]");
+  } else {
+    const { data, error } = await state.supabase.rpc("get_my_external", {
+      p_assessment_id: state.assessmentId, p_respondent_name: state.user.name
+    });
+    if (!error) state.externalNotes = data || [];
+  }
+  paintExternalNotes();
+}
+function paintExternalNotes() {
+  document.querySelectorAll("#externalContainer .notes-list").forEach(list => {
+    const force = list.dataset.force, type = list.dataset.type;
+    const items = state.externalNotes.filter(n =>
+      (n.force_category || n.force) === force && (n.note_type || n.type) === type);
+    list.innerHTML = items.map(n => `
+      <div class="flex items-start gap-2 text-xs group">
+        <span class="chip ${type==='opportunity'?'bg-emerald-100 text-emerald-800':'bg-rose-100 text-rose-800'}">P${n.priority}</span>
+        <span class="flex-1">${escapeHtml(n.note)}</span>
+        <button title="Delete" data-delete-id="${escapeHtml(n.id||'')}"
+          class="delete-note text-slate-300 hover:text-rose-600 leading-none px-1">×</button>
+      </div>`).join("") || `<div class="text-xs text-slate-400 italic">No notes yet.</div>`;
+  });
+  document.querySelectorAll("#externalContainer .delete-note").forEach(b =>
+    b.addEventListener("click", onDeleteNote));
+}
+
+async function onDeleteNote(e) {
+  const id = e.currentTarget.dataset.deleteId;
+  if (!id) return;
+  if (!confirm("Delete this note?")) return;
+  if (state.mode === "supabase") {
+    const { data, error } = await state.supabase.rpc("delete_my_external_note", {
+      p_id: id, p_respondent_name: state.user.name
+    });
+    if (error) return alert("Couldn't delete: " + error.message);
+    if (!data) return alert("Couldn't delete — that note isn't yours.");
+    await loadMyExternal();
+  } else {
+    state.externalNotes = state.externalNotes.filter(n => n.id !== id);
+    localStorage.setItem("bmc_swot_external_" + (state.assessmentId||"local"), JSON.stringify(state.externalNotes));
+    paintExternalNotes();
+  }
+}
+
+/* ---------- 8. DASHBOARD ---------- */
+async function loadDashboard() {
+  if (state.mode === "supabase") {
+    const key = currentOwnerKey();
+    if (!key) {
+      document.getElementById("dashSubtitle").textContent =
+        "You are not the owner of this session. No dashboard access.";
+      document.getElementById("dashBlocks").innerHTML = "";
+      document.getElementById("dashDivergence").innerHTML = "";
+      document.getElementById("dashExternal").innerHTML = "";
+      return;
+    }
+    const { data: resp, error: e1 } = await state.supabase.rpc("get_dashboard_responses", {
+      p_assessment_id: state.assessmentId, p_owner_key: key
+    });
+    const { data: ext,  error: e2 } = await state.supabase.rpc("get_dashboard_external", {
+      p_assessment_id: state.assessmentId, p_owner_key: key
+    });
+    if (e1 || e2) {
+      alert("Dashboard access denied. Your owner key may have been rotated.");
+      return;
+    }
+    state.allResponses = resp || [];
+    state.allExternal  = ext || [];
+  } else {
+    // In local mode, the only respondent is the current user.
+    state.allResponses = Object.entries(state.responses).map(([id, r]) => {
+      const [blockKey, sign, idxStr] = id.split("|");
+      const idx = +idxStr;
+      const b = SWOT.find(x => x.key === blockKey);
+      return {
+        assessment_id: state.assessmentId,
+        respondent_name: state.user.name || "You",
+        respondent_role: state.user.role,
+        block_key: blockKey, statement_sign: sign, statement_index: idx,
+        statement_text: sign === "+" ? b.strengths[idx] : b.weaknesses[idx],
+        score: r.score, comment: r.comment
+      };
+    });
+    state.allExternal = state.externalNotes.map(n => ({
+      respondent_name: state.user.name || "You",
+      force_category: n.force_category || n.force,
+      note_type: n.note_type || n.type,
+      note: n.note, priority: n.priority
+    }));
+  }
+  renderDashboard();
+}
+
+function renderDashboard() {
+  document.getElementById("dashSubtitle").textContent =
+    `Session: ${state.assessmentName || "—"} · ${uniqueRespondents().length} respondent(s)`;
+
+  // Respondents list
+  const roles = {};
+  uniqueRespondents().forEach(n => {
+    const row = state.allResponses.find(r => r.respondent_name === n);
+    roles[n] = row?.respondent_role || "";
+  });
+  document.getElementById("respondentsList").innerHTML = uniqueRespondents().map(n =>
+    `<span class="chip bg-slate-100 text-slate-700 mr-2 mb-2">${escapeHtml(n)}${roles[n]?` · ${escapeHtml(roles[n])}`:""}</span>`
+  ).join("") || `<span class="text-slate-400 italic text-sm">No responses yet.</span>`;
+
+  // Per-block averages
+  const container = document.getElementById("dashBlocks");
+  container.innerHTML = "";
+  SWOT.forEach(block => {
+    const card = document.createElement("div");
+    card.className = "block-card bg-white border border-slate-200 rounded-lg p-4";
+    const sAvgRows = block.strengths.map((txt, idx) => avgRow(block.key, "+", idx, txt));
+    const wAvgRows = block.weaknesses.map((txt, idx) => avgRow(block.key, "-", idx, txt));
+    const sAvg = avg(sAvgRows.map(r => r.avg));
+    const wAvg = avg(wAvgRows.map(r => r.avg));
+    card.innerHTML = `
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <div class="text-xs text-slate-500 uppercase tracking-wide">${block.group}</div>
+          <div class="font-semibold text-lg">${block.title}</div>
+        </div>
+        <div class="text-right text-xs text-slate-500">
+          <div>+ ${sAvg.toFixed(2)} / 5</div>
+          <div>− ${wAvg.toFixed(2)} / 5</div>
+        </div>
+      </div>
+      <div class="space-y-1.5 mb-2">
+        ${sAvgRows.map(r => bar(r,"+")).join("")}
+      </div>
+      <div class="space-y-1.5">
+        ${wAvgRows.map(r => bar(r,"-")).join("")}
+      </div>`;
+    container.appendChild(card);
+  });
+
+  // Divergence
+  const allRows = SWOT.flatMap(block => [
+    ...block.strengths.map((t,i)=>({block: block.title, blockKey: block.key, sign:"+", idx:i, text:t})),
+    ...block.weaknesses.map((t,i)=>({block: block.title, blockKey: block.key, sign:"-", idx:i, text:t})),
+  ]).map(r => ({
+    ...r,
+    ...stats(state.allResponses.filter(x => x.block_key===r.blockKey && x.statement_sign===r.sign && x.statement_index===r.idx).map(x => x.score).filter(s=>s>0))
+  })).filter(r => r.n >= 2).sort((a,b) => b.stdev - a.stdev).slice(0, 10);
+
+  document.getElementById("dashDivergence").innerHTML = allRows.length === 0
+    ? `<div class="text-sm text-slate-500 italic">Need at least two respondents per statement to compute divergence.</div>`
+    : `<table class="w-full text-sm">
+        <thead class="text-xs uppercase text-slate-500">
+          <tr><th class="text-left py-1">Block</th><th class="text-left py-1">Statement</th><th>Avg</th><th>σ</th><th>n</th></tr>
+        </thead>
+        <tbody>${allRows.map(r => `
+          <tr class="border-t">
+            <td class="py-1 text-xs">${escapeHtml(r.block)} <span class="chip ${r.sign==='+'?'bg-emerald-100 text-emerald-800':'bg-rose-100 text-rose-800'}">${r.sign}</span></td>
+            <td class="py-1">${escapeHtml(r.text)}</td>
+            <td class="text-center">${r.mean.toFixed(2)}</td>
+            <td class="text-center font-semibold">${r.stdev.toFixed(2)}</td>
+            <td class="text-center">${r.n}</td>
+          </tr>`).join("")}
+        </tbody></table>`;
+
+  // External
+  const ext = document.getElementById("dashExternal");
+  ext.innerHTML = "";
+  EXTERNAL_FORCES.forEach(f => {
+    const opps = state.allExternal.filter(n => n.force_category===f.key && n.note_type==="opportunity").sort((a,b)=>b.priority-a.priority);
+    const thr  = state.allExternal.filter(n => n.force_category===f.key && n.note_type==="threat").sort((a,b)=>b.priority-a.priority);
+    const card = document.createElement("div");
+    card.className = "block-card bg-white border border-slate-200 rounded-lg p-4";
+    card.innerHTML = `
+      <div class="font-semibold mb-1">${f.title}</div>
+      <div class="text-xs text-slate-500 mb-3">${f.desc}</div>
+      <div class="grid grid-cols-2 gap-3 text-xs">
+        <div>
+          <div class="font-semibold text-emerald-700 mb-1">Opportunities (${opps.length})</div>
+          ${opps.map(n=>noteLine(n,"opportunity")).join("") || `<div class="italic text-slate-400">—</div>`}
+        </div>
+        <div>
+          <div class="font-semibold text-rose-700 mb-1">Threats (${thr.length})</div>
+          ${thr.map(n=>noteLine(n,"threat")).join("") || `<div class="italic text-slate-400">—</div>`}
+        </div>
+      </div>`;
+    ext.appendChild(card);
+  });
+}
+
+function uniqueRespondents() {
+  const s = new Set(state.allResponses.map(r => r.respondent_name));
+  state.allExternal.forEach(n => s.add(n.respondent_name));
+  return [...s].filter(Boolean);
+}
+
+function avgRow(blockKey, sign, idx, text) {
+  const rows = state.allResponses.filter(x =>
+    x.block_key === blockKey && x.statement_sign === sign && x.statement_index === idx && x.score > 0);
+  return { text, avg: avg(rows.map(r => r.score)), n: rows.length };
+}
+function avg(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
+function stats(arr) {
+  const n = arr.length;
+  if (!n) return { mean:0, stdev:0, n:0 };
+  const mean = avg(arr);
+  const stdev = Math.sqrt(avg(arr.map(x => (x-mean)**2)));
+  return { mean, stdev, n };
+}
+function bar(r, sign) {
+  const pct = (r.avg/5)*100;
+  const color = sign === "+" ? "#16a34a" : "#dc2626";
+  return `
+    <div>
+      <div class="flex justify-between text-xs">
+        <span class="truncate pr-2">${escapeHtml(r.text)}</span>
+        <span class="text-slate-500 whitespace-nowrap">${r.avg.toFixed(1)} (n=${r.n})</span>
+      </div>
+      <div class="bar"><span style="width:${pct}%;background:${color}"></span></div>
+    </div>`;
+}
+function noteLine(n, type) {
+  return `<div class="flex items-start gap-2 mb-1">
+    <span class="chip ${type==='opportunity'?'bg-emerald-100 text-emerald-800':'bg-rose-100 text-rose-800'}">P${n.priority||"-"}</span>
+    <span class="flex-1">${escapeHtml(n.note)} <span class="text-slate-400">— ${escapeHtml(n.respondent_name)}</span></span>
+  </div>`;
+}
+
+document.getElementById("refreshDash").addEventListener("click", loadDashboard);
+document.getElementById("exportCsv").addEventListener("click", exportCsv);
+document.getElementById("exportJson").addEventListener("click", exportJson);
+
+function exportCsv() {
+  const lines = [["respondent","role","group","block","sign","statement","score","comment"].join(",")];
+  state.allResponses.forEach(r => {
+    const b = SWOT.find(x => x.key===r.block_key);
+    lines.push([
+      r.respondent_name, r.respondent_role||"",
+      b?.group||"", b?.title||r.block_key,
+      r.statement_sign, q(r.statement_text), r.score, q(r.comment||"")
+    ].join(","));
+  });
+  lines.push("");
+  lines.push(["respondent","force","type","priority","note"].join(","));
+  state.allExternal.forEach(n => {
+    lines.push([n.respondent_name, n.force_category, n.note_type, n.priority||"", q(n.note)].join(","));
+  });
+  downloadFile("bmc-swot-export.csv", lines.join("\n"));
+}
+function exportJson() {
+  downloadFile("bmc-swot-export.json", JSON.stringify({
+    session: state.assessmentName,
+    responses: state.allResponses,
+    external:  state.allExternal
+  }, null, 2));
+}
+function q(s) { if (s==null) return ""; const t = String(s).replaceAll('"','""'); return /[,\n"]/.test(t) ? `"${t}"` : t; }
+function downloadFile(name, content) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([content], { type: "text/plain" }));
+  a.download = name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+
+/* ---------- 9. LIVE DASHBOARD POLLING ---------- */
+// Realtime via postgres_changes respects RLS; because anon can't SELECT the
+// response tables, we poll every 10s while the owner is viewing the dashboard.
+let pollTimer = null;
+function startDashboardPolling() {
+  stopDashboardPolling();
+  pollTimer = setInterval(() => {
+    if (!document.getElementById("view-dashboard").classList.contains("hidden")) {
+      loadDashboard();
+    }
+  }, 10000);
+}
+function stopDashboardPolling() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
+
+/* ---------- 10. UTIL ---------- */
+function escapeHtml(s) {
+  return (s == null ? "" : String(s))
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+}
+
+/* ---------- 11. BOOT ---------- */
+(async function init() {
+  renderSetup();
+  connectSupabase();
+  await refreshAssessments();
+  if (state.mode === "supabase" && state.assessmentId && state.user.name) {
+    await loadMyResponses();
+    await loadMyExternal();
+    if (isOwner()) startDashboardPolling();
+  } else if (state.mode === "local") {
+    state.responses = JSON.parse(localStorage.getItem("bmc_swot_responses_" + (state.assessmentId||"local")) || "{}");
+    state.externalNotes = JSON.parse(localStorage.getItem("bmc_swot_external_" + (state.assessmentId||"local")) || "[]");
+  }
+  showView("setup");
+})();
+</script>
+</body>
+</html>
