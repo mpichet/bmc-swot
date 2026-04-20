@@ -758,7 +758,10 @@ async function onAddNote(e) {
   const prio  = +cell.querySelector("select").value;
   const txt   = input.value.trim();
   if (!txt) return;
-  const note = { force, type, note: txt, priority: prio, respondent_name: state.user.name };
+  const note = {
+    id: (crypto.randomUUID ? crypto.randomUUID() : "loc-" + Date.now() + "-" + Math.random().toString(36).slice(2)),
+    force, type, note: txt, priority: prio, respondent_name: state.user.name
+  };
   if (state.mode === "supabase") {
     // Can't .select().single() here — anon is blocked from SELECTing external_notes
     // by RLS. Insert only, then reload via RPC to refresh the local list.
@@ -799,11 +802,33 @@ function paintExternalNotes() {
     const items = state.externalNotes.filter(n =>
       (n.force_category || n.force) === force && (n.note_type || n.type) === type);
     list.innerHTML = items.map(n => `
-      <div class="flex items-start gap-2 text-xs">
+      <div class="flex items-start gap-2 text-xs group">
         <span class="chip ${type==='opportunity'?'bg-emerald-100 text-emerald-800':'bg-rose-100 text-rose-800'}">P${n.priority}</span>
         <span class="flex-1">${escapeHtml(n.note)}</span>
+        <button title="Delete" data-delete-id="${escapeHtml(n.id||'')}"
+          class="delete-note text-slate-300 hover:text-rose-600 leading-none px-1">×</button>
       </div>`).join("") || `<div class="text-xs text-slate-400 italic">No notes yet.</div>`;
   });
+  document.querySelectorAll("#externalContainer .delete-note").forEach(b =>
+    b.addEventListener("click", onDeleteNote));
+}
+
+async function onDeleteNote(e) {
+  const id = e.currentTarget.dataset.deleteId;
+  if (!id) return;
+  if (!confirm("Delete this note?")) return;
+  if (state.mode === "supabase") {
+    const { data, error } = await state.supabase.rpc("delete_my_external_note", {
+      p_id: id, p_respondent_name: state.user.name
+    });
+    if (error) return alert("Couldn't delete: " + error.message);
+    if (!data) return alert("Couldn't delete — that note isn't yours.");
+    await loadMyExternal();
+  } else {
+    state.externalNotes = state.externalNotes.filter(n => n.id !== id);
+    localStorage.setItem("bmc_swot_external_" + (state.assessmentId||"local"), JSON.stringify(state.externalNotes));
+    paintExternalNotes();
+  }
 }
 
 /* ---------- 8. DASHBOARD ---------- */
