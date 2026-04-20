@@ -9,11 +9,12 @@
 <style>
   body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
   .dot {
-    width: 22px; height: 22px; border-radius: 9999px;
-    border: 2px solid #9ca3af; cursor: pointer;
-    transition: transform .08s ease, background-color .1s ease;
+    width: 24px; height: 24px; border-radius: 9999px;
+    border: 2px solid #9ca3af; cursor: pointer; background: transparent;
+    padding: 0; transition: transform .08s ease, background-color .1s ease;
   }
   .dot:hover { transform: scale(1.12); }
+  .dot:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
   .dot.filled-plus  { background-color: #16a34a; border-color: #15803d; }
   .dot.filled-minus { background-color: #dc2626; border-color: #b91c1c; }
   .block-card { break-inside: avoid; }
@@ -21,8 +22,10 @@
   .bar > span { display: block; height: 100%; }
   .chip { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 11px; font-weight: 600; }
   details > summary { cursor: pointer; }
-  .heatcell { width: 100%; height: 44px; display: flex; align-items: center; justify-content: center;
-               color: white; font-weight: 600; border-radius: 4px; font-size: 12px; }
+  .locked-overlay {
+    position: absolute; inset: 0; background: rgba(255,255,255,0.5);
+    pointer-events: all; cursor: not-allowed; border-radius: .5rem;
+  }
   @media print {
     .no-print { display: none !important; }
     .block-card { page-break-inside: avoid; }
@@ -47,7 +50,7 @@
       <button data-view="dashboard"  id="navDashboard" class="nav-btn px-3 py-1.5 rounded text-sm hidden">Dashboard</button>
     </nav>
   </div>
-  <div id="bannerModeRow" class="max-w-6xl mx-auto px-4 pb-2 text-xs"></div>
+  <div id="bannerModeRow" class="max-w-6xl mx-auto px-4 pb-2 text-xs flex items-center gap-3 flex-wrap"></div>
 </header>
 
 <main class="max-w-6xl mx-auto px-4 py-6">
@@ -59,31 +62,22 @@
 
     <div class="grid md:grid-cols-2 gap-6">
       <div class="bg-white border border-slate-200 rounded-lg p-5">
-        <h2 class="font-semibold mb-3">1. Connect Supabase (for live sharing)</h2>
-        <p class="text-sm text-slate-600 mb-3">Paste your Supabase project URL and anon key. See SETUP.md for the 5-minute setup. Leave blank to run in <b>local demo mode</b> (single-user, saved in your browser).</p>
-        <label class="block text-sm font-medium mt-2">Supabase URL</label>
-        <input id="cfgUrl"     class="w-full border rounded px-3 py-2 text-sm" placeholder="https://xxxxx.supabase.co">
-        <label class="block text-sm font-medium mt-3">Supabase anon key</label>
-        <input id="cfgKey"     class="w-full border rounded px-3 py-2 text-sm" placeholder="eyJhbGciOi...">
-        <div class="flex gap-2 mt-4">
-          <button id="saveConfig" class="bg-slate-900 text-white text-sm px-3 py-2 rounded">Save &amp; connect</button>
-          <button id="clearConfig" class="text-sm px-3 py-2 rounded border">Clear</button>
-        </div>
-        <div id="connStatus" class="text-xs mt-2 text-slate-500"></div>
-      </div>
-
-      <div class="bg-white border border-slate-200 rounded-lg p-5">
-        <h2 class="font-semibold mb-3">2. You</h2>
+        <h2 class="font-semibold mb-3">1. You</h2>
         <label class="block text-sm font-medium">Your name</label>
         <input id="userName" class="w-full border rounded px-3 py-2 text-sm" placeholder="e.g. Maxime P.">
         <label class="block text-sm font-medium mt-3">Role (optional)</label>
         <input id="userRole" class="w-full border rounded px-3 py-2 text-sm" placeholder="e.g. CEO">
+        <p class="text-xs text-slate-500 mt-3">
+          You're identified by an anonymous token stored in this browser — not by your typed name. Two people can type the same name without overwriting each other.
+        </p>
+      </div>
 
-        <h2 class="font-semibold mt-5 mb-2">3. Assessment session</h2>
+      <div class="bg-white border border-slate-200 rounded-lg p-5">
+        <h2 class="font-semibold mb-3">2. Assessment session</h2>
         <label class="block text-sm font-medium">Select or create a session</label>
         <div class="flex gap-2 mt-1">
           <select id="assessmentSelect" class="w-full border rounded px-2 py-2 text-sm"></select>
-          <button id="refreshAssessments" class="text-sm px-3 py-2 rounded border">↻</button>
+          <button id="refreshAssessments" class="text-sm px-3 py-2 rounded border" title="Refresh list">↻</button>
         </div>
         <div class="flex gap-2 mt-2">
           <input id="newAssessmentName" class="flex-1 border rounded px-3 py-2 text-sm" placeholder="New session name, e.g. Q2 2026 review">
@@ -101,9 +95,19 @@
       </div>
     </div>
 
-    <div class="mt-6 bg-amber-50 border border-amber-200 text-amber-900 rounded p-4 text-sm">
-      <b>Note on statements.</b> The +/− statements below are adapted from <em>Business Model Generation</em> (pp. 216–225). Cross-check against the book and edit the <code>SWOT</code> object at the top of the HTML file if you need exact wording — statements live in one place and are easy to tune.
-    </div>
+    <details class="mt-6 bg-white border border-slate-200 rounded-lg p-4 text-sm">
+      <summary class="font-semibold">Advanced: override Supabase connection</summary>
+      <p class="text-slate-600 mt-2 mb-3 text-xs">This app ships with a baked-in Supabase project. Only override this if you're forking the app to point at a different Supabase instance.</p>
+      <label class="block text-sm font-medium mt-2">Supabase URL</label>
+      <input id="cfgUrl"     class="w-full border rounded px-3 py-2 text-sm" placeholder="https://xxxxx.supabase.co">
+      <label class="block text-sm font-medium mt-3">Supabase publishable (anon) key</label>
+      <input id="cfgKey"     class="w-full border rounded px-3 py-2 text-sm" placeholder="sb_publishable_...">
+      <div class="flex gap-2 mt-3">
+        <button id="saveConfig"  class="bg-slate-900 text-white text-sm px-3 py-2 rounded">Save override</button>
+        <button id="clearConfig" class="text-sm px-3 py-2 rounded border">Reset to baked-in</button>
+      </div>
+      <div id="connStatus" class="text-xs mt-2 text-slate-500"></div>
+    </details>
   </section>
 
   <!-- ASSESS VIEW -->
@@ -111,7 +115,7 @@
     <div class="flex items-end justify-between mb-4 flex-wrap gap-2">
       <div>
         <h1 class="text-2xl font-bold">SWOT assessment — 9 building blocks</h1>
-        <p class="text-slate-600 text-sm">For each statement, click a dot 1→5 to reflect how strongly it applies to your business today. Green dots = strengths (+), red dots = weaknesses (−).</p>
+        <p class="text-slate-600 text-sm">For each statement, click a dot 1→5 to reflect how strongly it applies to your business today. Green dots = strengths (+), red dots = weaknesses (−). Click the same dot again to clear.</p>
       </div>
       <div class="text-right">
         <div id="progressLabel" class="text-sm text-slate-500"></div>
@@ -119,7 +123,7 @@
       </div>
     </div>
 
-    <div id="assessContainer" class="grid md:grid-cols-2 gap-5"></div>
+    <div id="assessContainer" class="grid md:grid-cols-2 gap-5 relative"></div>
 
     <div class="mt-6 flex justify-between items-center no-print">
       <button class="nav-btn-link text-sm underline" data-view="setup">← Back to setup</button>
@@ -139,9 +143,21 @@
         <li><b>Key trends</b> — technology, regulatory, societal/cultural, socioeconomic.</li>
         <li><b>Macroeconomic forces</b> — global conditions, capital markets, commodity prices, economic infrastructure.</li>
       </ul>
-      <p class="mt-2 text-xs text-sky-900/80">Together with the internal ratings, this produces a complete SWOT for your business model rather than just half of it.</p>
     </div>
-    <div id="externalContainer" class="grid md:grid-cols-2 gap-5"></div>
+    <div id="externalContainer" class="grid md:grid-cols-2 gap-5 relative"></div>
+
+    <!-- Submit panel -->
+    <div id="submitPanel" class="mt-6 bg-white border border-slate-200 rounded-lg p-5 flex items-center justify-between gap-4 flex-wrap">
+      <div>
+        <h2 class="font-semibold" id="submitHeading">Ready to submit?</h2>
+        <p class="text-sm text-slate-600" id="submitHelp">Once you submit, your answers are locked in and the session owner sees them as "complete". You can unsubmit to edit again.</p>
+      </div>
+      <div class="flex gap-2 no-print">
+        <button id="unsubmitBtn" class="hidden text-sm px-4 py-2 rounded border">Unsubmit &amp; edit</button>
+        <button id="submitBtn"   class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold px-4 py-2 rounded">Submit my assessment</button>
+      </div>
+    </div>
+
     <div class="mt-6 flex justify-between items-center no-print">
       <button class="nav-btn-link text-sm underline" data-view="assess">← Back to blocks</button>
       <button class="nav-btn-link bg-slate-900 text-white text-sm px-4 py-2 rounded" data-view="dashboard">See compiled dashboard →</button>
@@ -186,12 +202,20 @@
 
 <script>
 /* ============================================================
-   BMC SWOT — single-file web app
+   BMC SWOT — single-file web app (v3)
    ============================================================ */
 
-/* ---------- 1. STATEMENTS (edit here if you want the exact book wording) ---------- */
+/* ---------- 0. BAKED-IN SUPABASE CONFIG ----------
+   Publishable (anon) key is safe to ship to browsers — security lives in RLS
+   and the SECURITY DEFINER RPCs (see supabase-setup.sql). Overridable via the
+   "Advanced" panel on the Setup view for forks. */
+const DEFAULT_CONFIG = {
+  url: "https://umsfhkzzpsckpujwauyc.supabase.co",
+  key: "sb_publishable_dpfc2SfTQLGre5xwuqvGKw_6vOYgyvm"
+};
+
+/* ---------- 1. STATEMENTS ---------- */
 const SWOT = [
-  // Value Proposition
   { key: "value-propositions", title: "Value Propositions", group: "Value Proposition",
     color: "#93c5fd",
     strengths: [
@@ -207,7 +231,6 @@ const SWOT = [
       "Substantial parts of our value propositions could easily be copied."
     ]
   },
-  // Cost / Revenue
   { key: "revenue-streams", title: "Revenue Streams", group: "Cost / Revenue",
     color: "#86efac",
     strengths: [
@@ -244,7 +267,6 @@ const SWOT = [
       "We fail to benefit from economies of scale."
     ]
   },
-  // Infrastructure
   { key: "key-resources", title: "Key Resources", group: "Infrastructure",
     color: "#fde68a",
     strengths: [
@@ -284,7 +306,6 @@ const SWOT = [
       "Our relationships with partners are conflict-ridden."
     ]
   },
-  // Customer Interface
   { key: "customer-segments", title: "Customer Segments", group: "Customer Interface",
     color: "#f9a8d4",
     strengths: [
@@ -339,27 +360,46 @@ const SWOT = [
 const EXTERNAL_FORCES = [
   { key: "market",    title: "Market forces",       desc: "Market issues, segments, needs/demands, switching costs, revenue attractiveness." },
   { key: "industry",  title: "Industry forces",     desc: "Competitors, new entrants, substitutes, suppliers & value-chain actors, stakeholders." },
-  { key: "trends",    title: "Key trends",          desc: "Technology, regulatory, societal &amp; cultural, socioeconomic." },
-  { key: "macro",     title: "Macroeconomic forces",desc: "Global market conditions, capital markets, commodities &amp; resources, economic infrastructure." }
+  { key: "trends",    title: "Key trends",          desc: "Technology, regulatory, societal & cultural, socioeconomic." },
+  { key: "macro",     title: "Macroeconomic forces",desc: "Global market conditions, capital markets, commodities & resources, economic infrastructure." }
 ];
 
 /* ---------- 2. APP STATE ---------- */
+function loadCfg() {
+  const stored = JSON.parse(localStorage.getItem("bmc_swot_cfg") || "null");
+  if (stored && stored.url && stored.key) return stored;
+  return { ...DEFAULT_CONFIG };
+}
+function getOrCreateRespondentToken() {
+  let t = localStorage.getItem("bmc_swot_respondent_token");
+  if (!t) {
+    t = (crypto.randomUUID ? crypto.randomUUID()
+         : "loc-" + Date.now() + "-" + Math.random().toString(36).slice(2));
+    localStorage.setItem("bmc_swot_respondent_token", t);
+  }
+  return t;
+}
+
 const state = {
-  cfg: JSON.parse(localStorage.getItem("bmc_swot_cfg") || "{}"),
+  cfg: loadCfg(),
   user: JSON.parse(localStorage.getItem("bmc_swot_user") || "{}"),
+  token: getOrCreateRespondentToken(),
   assessmentId: localStorage.getItem("bmc_swot_assessment") || null,
   assessmentName: localStorage.getItem("bmc_swot_assessment_name") || null,
-  ownerKeys: JSON.parse(localStorage.getItem("bmc_swot_owner_keys") || "{}"), // { [assessmentId]: "key" }
+  ownerKeys: JSON.parse(localStorage.getItem("bmc_swot_owner_keys") || "{}"),
   responses: {},
   externalNotes: [],
   allResponses: [],
   allExternal: [],
+  allRespondents: [],
+  submittedAt: null,
   supabase: null,
-  mode: "local"
+  mode: "local",
+  saveState: "idle",    // idle | saving | saved | error
+  pendingRetries: new Map(), // id -> payload, for failed writes
 };
 function currentOwnerKey() { return state.ownerKeys[state.assessmentId] || null; }
 function isOwner() {
-  // Local demo mode: the only user is always the owner.
   if (state.mode === "local") return true;
   return !!currentOwnerKey();
 }
@@ -367,10 +407,10 @@ function saveOwnerKey(assessmentId, key) {
   state.ownerKeys[assessmentId] = key;
   localStorage.setItem("bmc_swot_owner_keys", JSON.stringify(state.ownerKeys));
 }
+function isSubmitted() { return state.submittedAt != null; }
 function updateOwnerNav() {
   const btn = document.getElementById("navDashboard");
-  if (!btn) return;
-  btn.classList.toggle("hidden", !isOwner());
+  if (btn) btn.classList.toggle("hidden", !isOwner());
 }
 
 /* ---------- 3. SUPABASE ---------- */
@@ -390,23 +430,52 @@ function connectSupabase() {
 
 function renderBanner() {
   const row = document.getElementById("bannerModeRow");
-  const ownerChip = isOwner()
-    ? `<span class="chip bg-indigo-100 text-indigo-800 ml-2">★ Owner</span>` : "";
-  if (state.mode === "supabase") {
-    row.innerHTML = `<span class="chip bg-emerald-100 text-emerald-800">● Live (Supabase)</span>${ownerChip}
-      <span class="text-slate-500 ml-2">Session: <b>${escapeHtml(state.assessmentName || "—")}</b> · User: <b>${escapeHtml(state.user.name || "—")}</b></span>`;
-  } else {
-    row.innerHTML = `<span class="chip bg-amber-100 text-amber-800">● Local demo mode</span>${ownerChip}
-      <span class="text-slate-500 ml-2">Configure Supabase in Setup to enable team sharing. User: <b>${escapeHtml(state.user.name || "—")}</b></span>`;
-  }
+  const ownerChip  = isOwner()  ? `<span class="chip bg-indigo-100 text-indigo-800">★ Owner</span>` : "";
+  const submitChip = isSubmitted() ? `<span class="chip bg-sky-100 text-sky-800">✓ Submitted</span>` : "";
+  const saveChip   = renderSaveChip();
+  const modeChip   = state.mode === "supabase"
+    ? `<span class="chip bg-emerald-100 text-emerald-800">● Live (Supabase)</span>`
+    : `<span class="chip bg-amber-100 text-amber-800">● Local demo mode</span>`;
+  row.innerHTML = `
+    ${modeChip}${ownerChip}${submitChip}${saveChip}
+    <span class="text-slate-500">Session: <b>${escapeHtml(state.assessmentName || "—")}</b> · User: <b>${escapeHtml(state.user.name || "—")}</b></span>`;
   updateOwnerNav();
+}
+
+function renderSaveChip() {
+  if (state.mode !== "supabase") return "";
+  const retries = state.pendingRetries.size;
+  if (retries > 0) {
+    return `<span class="chip bg-rose-100 text-rose-800" title="Clicks that failed to save. Click to retry.">
+      <button id="retryFailed" class="underline">⚠ ${retries} unsaved — retry</button></span>`;
+  }
+  if (state.saveState === "saving") return `<span class="chip bg-amber-100 text-amber-800">Saving…</span>`;
+  if (state.saveState === "saved")  return `<span class="chip bg-emerald-100 text-emerald-800">✓ Saved</span>`;
+  return "";
+}
+
+function setSaveState(s) {
+  state.saveState = s;
+  renderBanner();
+  if (s === "saved") {
+    clearTimeout(setSaveState._t);
+    setSaveState._t = setTimeout(() => {
+      if (state.saveState === "saved") { state.saveState = "idle"; renderBanner(); }
+    }, 1800);
+  }
 }
 
 /* ---------- 4. VIEW SWITCHING ---------- */
 function showView(name) {
   if (name === "dashboard" && !isOwner()) {
-    alert("The dashboard is visible only to the session owner. Ask Max (the session creator) for the owner key if you need access.");
+    alert("The dashboard is visible only to the session owner. Ask the session creator for the owner key if you need access.");
     name = "assess";
+  }
+  if ((name === "assess" || name === "external") && state.mode === "supabase") {
+    if (!state.assessmentId || state.assessmentId === "local" || !state.user.name) {
+      alert("Pick or create a session and enter your name first (Setup).");
+      name = "setup";
+    }
   }
   document.querySelectorAll(".view").forEach(el => el.classList.add("hidden"));
   const el = document.getElementById("view-" + name);
@@ -426,27 +495,32 @@ document.querySelectorAll(".nav-btn, .nav-btn-link").forEach(b => {
 
 /* ---------- 5. SETUP VIEW ---------- */
 function renderSetup() {
-  document.getElementById("cfgUrl").value    = state.cfg.url || "";
-  document.getElementById("cfgKey").value    = state.cfg.key || "";
+  const usingDefault = state.cfg.url === DEFAULT_CONFIG.url && state.cfg.key === DEFAULT_CONFIG.key;
+  document.getElementById("cfgUrl").value    = usingDefault ? "" : (state.cfg.url || "");
+  document.getElementById("cfgKey").value    = usingDefault ? "" : (state.cfg.key || "");
+  document.getElementById("cfgUrl").placeholder = DEFAULT_CONFIG.url;
+  document.getElementById("cfgKey").placeholder = "sb_publishable_… (baked-in by default)";
   document.getElementById("userName").value  = state.user.name || "";
   document.getElementById("userRole").value  = state.user.role || "";
 }
 
 document.getElementById("saveConfig").addEventListener("click", async () => {
-  state.cfg = {
-    url: document.getElementById("cfgUrl").value.trim(),
-    key: document.getElementById("cfgKey").value.trim()
-  };
+  const url = document.getElementById("cfgUrl").value.trim();
+  const key = document.getElementById("cfgKey").value.trim();
+  if (!url || !key) return alert("Enter both URL and key, or click Reset.");
+  state.cfg = { url, key };
   localStorage.setItem("bmc_swot_cfg", JSON.stringify(state.cfg));
   const ok = connectSupabase();
-  document.getElementById("connStatus").textContent = ok ? "Connected." : "Not configured — running in local demo mode.";
+  document.getElementById("connStatus").textContent = ok ? "Override saved." : "Couldn't connect with those credentials.";
   await refreshAssessments();
 });
-document.getElementById("clearConfig").addEventListener("click", () => {
+document.getElementById("clearConfig").addEventListener("click", async () => {
   localStorage.removeItem("bmc_swot_cfg");
-  state.cfg = {}; state.supabase = null; state.mode = "local";
-  renderSetup(); renderBanner();
-  document.getElementById("connStatus").textContent = "Configuration cleared.";
+  state.cfg = { ...DEFAULT_CONFIG };
+  connectSupabase();
+  renderSetup();
+  document.getElementById("connStatus").textContent = "Reset to baked-in configuration.";
+  await refreshAssessments();
 });
 
 async function refreshAssessments() {
@@ -459,29 +533,33 @@ async function refreshAssessments() {
     renderBanner();
     return;
   }
-  const { data, error } = await state.supabase.from("assessments_public").select("*").order("created_at", { ascending: false });
+  const { data, error } = await state.supabase
+    .from("assessments_public").select("*")
+    .order("created_at", { ascending: false });
   if (error) { sel.innerHTML = `<option>Error: ${error.message}</option>`; return; }
   if (!data.length) { sel.innerHTML = `<option value="">— none yet, create one →</option>`; return; }
   data.forEach(a => {
     const o = document.createElement("option");
     const owned = !!state.ownerKeys[a.id];
-    o.value = a.id; o.textContent = (owned ? "★ " : "") + a.name + (a.closed ? " (closed)" : "");
+    o.value = a.id;
+    o.textContent = (owned ? "★ " : "") + a.name + (a.closed ? " (closed)" : "");
     if (a.id === state.assessmentId) o.selected = true;
     sel.appendChild(o);
   });
   sel.onchange = () => {
     state.assessmentId = sel.value;
-    state.assessmentName = sel.options[sel.selectedIndex].textContent.replace(/^★ /, "");
+    state.assessmentName = sel.options[sel.selectedIndex].textContent.replace(/^★ /, "").replace(/ \(closed\)$/, "");
     localStorage.setItem("bmc_swot_assessment", state.assessmentId);
     localStorage.setItem("bmc_swot_assessment_name", state.assessmentName);
     renderBanner();
   };
 }
 document.getElementById("refreshAssessments").addEventListener("click", refreshAssessments);
+
 document.getElementById("createAssessment").addEventListener("click", async () => {
   const name = document.getElementById("newAssessmentName").value.trim();
   if (!name) return alert("Give the session a name.");
-  if (state.mode !== "supabase") return alert("Connect Supabase first (left panel).");
+  if (state.mode !== "supabase") return alert("Supabase not connected (see Advanced).");
   const creator = document.getElementById("userName").value.trim() || state.user.name || null;
   const { data, error } = await state.supabase.rpc("create_assessment", {
     p_name: name, p_created_by: creator
@@ -496,8 +574,6 @@ document.getElementById("createAssessment").addEventListener("click", async () =
   document.getElementById("newAssessmentName").value = "";
   await refreshAssessments();
   renderBanner();
-
-  // Show the owner key once — user MUST save this to access the dashboard elsewhere.
   showOwnerKeyModal(row.owner_key, row.name);
 });
 
@@ -507,7 +583,7 @@ function showOwnerKeyModal(key, sessionName) {
   wrap.innerHTML = `
     <div class="bg-white rounded-lg max-w-lg w-full p-5 shadow-xl">
       <h3 class="text-lg font-bold mb-1">Session created: ${escapeHtml(sessionName)}</h3>
-      <p class="text-sm text-slate-600 mb-3">Here is your <b>owner key</b>. Only whoever holds this key can see the compiled dashboard for this session. It is stored in your browser automatically — but you should also save a copy somewhere (password manager, etc.) in case you need to access the dashboard from another device.</p>
+      <p class="text-sm text-slate-600 mb-3">Here is your <b>owner key</b>. Only whoever holds this key can see the compiled dashboard. It is stored in your browser — but save a copy somewhere safe (password manager) so you can still access the dashboard from another device.</p>
       <div class="flex gap-2 mb-3">
         <input id="ownerKeyDisplay" readonly value="${escapeHtml(key)}" class="flex-1 border rounded px-3 py-2 text-sm font-mono bg-slate-50">
         <button id="copyOwnerKey" class="bg-slate-900 text-white text-sm px-3 py-2 rounded">Copy</button>
@@ -527,11 +603,10 @@ function showOwnerKeyModal(key, sessionName) {
 
 // Manual owner-key entry for accessing dashboard on a different device
 document.getElementById("saveOwnerKey").addEventListener("click", async () => {
-  if (state.mode !== "supabase") return alert("Connect Supabase first, then select the session.");
+  if (state.mode !== "supabase") return alert("Supabase not connected.");
   if (!state.assessmentId || state.assessmentId === "local") return alert("Pick a session from the dropdown first.");
   const key = document.getElementById("ownerKeyInput").value.trim();
   if (!key) return alert("Paste your owner key.");
-  // Validate by calling the dashboard RPC with a quick probe.
   const { error } = await state.supabase.rpc("get_dashboard_responses", {
     p_assessment_id: state.assessmentId, p_owner_key: key
   });
@@ -542,6 +617,7 @@ document.getElementById("saveOwnerKey").addEventListener("click", async () => {
   startDashboardPolling();
   alert("Owner key accepted. The Dashboard tab is now visible.");
 });
+
 document.getElementById("saveUserGo").addEventListener("click", async () => {
   state.user = {
     name: document.getElementById("userName").value.trim(),
@@ -549,8 +625,24 @@ document.getElementById("saveUserGo").addEventListener("click", async () => {
   };
   if (!state.user.name) return alert("Please enter your name.");
   localStorage.setItem("bmc_swot_user", JSON.stringify(state.user));
+
   if (state.mode === "supabase") {
     if (!state.assessmentId || state.assessmentId === "local") return alert("Select or create an assessment session.");
+    // Register/update our respondent row. Creates it on first save.
+    const { error } = await state.supabase.rpc("upsert_respondent", {
+      p_assessment_id: state.assessmentId,
+      p_respondent_token: state.token,
+      p_name: state.user.name,
+      p_role: state.user.role || null
+    });
+    if (error) {
+      if (String(error.message || "").includes("already submitted")) {
+        alert("You've already submitted this session. Use the Unsubmit button on the External SWOT page if you need to edit.");
+      } else {
+        return alert("Couldn't start session: " + error.message);
+      }
+    }
+    await loadMyRespondent();
     await loadMyResponses();
     await loadMyExternal();
     if (isOwner()) startDashboardPolling();
@@ -596,50 +688,50 @@ function renderAssess() {
     container.appendChild(card);
   });
 
-  // Bind dot clicks
-  container.querySelectorAll(".dot").forEach(d => {
-    d.addEventListener("click", onDotClick);
-  });
-  // Bind comment inputs
-  container.querySelectorAll("textarea.comment").forEach(t => {
-    t.addEventListener("blur", onCommentBlur);
-  });
+  container.querySelectorAll(".dot").forEach(d => d.addEventListener("click", onDotClick));
+  container.querySelectorAll("textarea.comment").forEach(t => t.addEventListener("blur", onCommentBlur));
 
-  // Restore any existing scores
-  Object.entries(state.responses).forEach(([k, v]) => paintDots(k, v.score));
+  Object.entries(state.responses).forEach(([k, v]) => {
+    paintDots(k, v.score);
+    const ta = document.querySelector(`textarea.comment[data-id="${CSS.escape(k)}"]`);
+    if (ta && v.comment) ta.value = v.comment;
+  });
   updateProgress();
+  applyLockedOverlay();
 }
 
 function rowHTML(blockKey, sign, idx, text) {
   const id = rKey(blockKey, sign, idx);
-  const signClass = sign === "+" ? "filled-plus" : "filled-minus";
   return `
     <div class="grid grid-cols-[1fr_auto] gap-3 items-start" data-row="${id}">
       <div>
-        <div class="text-sm leading-snug">${text}</div>
+        <div class="text-sm leading-snug">${escapeHtml(text)}</div>
         <textarea class="comment mt-1 w-full text-xs border rounded px-2 py-1" rows="1"
           placeholder="Optional comment…" data-id="${id}"></textarea>
       </div>
       <div class="flex gap-1.5 pt-0.5" data-dots="${id}" data-sign="${sign}">
-        ${[1,2,3,4,5].map(n => `<div class="dot" data-n="${n}" data-id="${id}" data-sign="${sign}"></div>`).join("")}
+        ${[1,2,3,4,5].map(n => `
+          <button type="button" class="dot" data-n="${n}" data-id="${id}" data-sign="${sign}"
+            aria-label="${sign==='+'?'Strength':'Weakness'} ${n} of 5"></button>`).join("")}
       </div>
     </div>`;
 }
 
 function onDotClick(e) {
+  if (isSubmitted()) return;
   const t = e.currentTarget;
   const id = t.dataset.id;
   const n = +t.dataset.n;
   const sign = t.dataset.sign;
   const current = state.responses[id]?.score || 0;
-  const score = (current === n) ? 0 : n; // click same dot to clear
+  const score = (current === n) ? 0 : n;
   state.responses[id] = { ...(state.responses[id] || {}), score, sign };
   paintDots(id, score);
   updateProgress();
   persistResponse(id);
 }
 function paintDots(id, score) {
-  const row = document.querySelector(`[data-dots="${id}"]`);
+  const row = document.querySelector(`[data-dots="${CSS.escape(id)}"]`);
   if (!row) return;
   const sign = row.dataset.sign;
   row.querySelectorAll(".dot").forEach(d => {
@@ -650,17 +742,22 @@ function paintDots(id, score) {
   });
 }
 function onCommentBlur(e) {
+  if (isSubmitted()) return;
   const id = e.currentTarget.dataset.id;
   const txt = e.currentTarget.value;
-  state.responses[id] = { ...(state.responses[id] || { score: 0 }), comment: txt };
+  const prev = state.responses[id] || { score: 0, sign: id.split("|")[1] };
+  if (prev.comment === txt) return;
+  state.responses[id] = { ...prev, comment: txt };
   persistResponse(id);
 }
 
 function updateProgress() {
   const total = SWOT.reduce((a,b) => a + b.strengths.length + b.weaknesses.length, 0);
   const done  = Object.values(state.responses).filter(r => (r.score||0) > 0).length;
-  document.getElementById("progressLabel").textContent = `${done} / ${total} rated`;
-  document.getElementById("progressBar").style.width = `${Math.round(done/total*100)}%`;
+  const el = document.getElementById("progressLabel");
+  if (el) el.textContent = `${done} / ${total} rated`;
+  const bar = document.getElementById("progressBar");
+  if (bar) bar.style.width = `${Math.round(done/total*100)}%`;
 }
 
 async function persistResponse(id) {
@@ -674,22 +771,40 @@ async function persistResponse(id) {
   const text  = sign === "+" ? block.strengths[idx] : block.weaknesses[idx];
   const r = state.responses[id];
   const payload = {
-    assessment_id: state.assessmentId,
-    respondent_name: state.user.name,
-    respondent_role: state.user.role || null,
-    block_key: blockKey,
-    statement_sign: sign,
-    statement_index: idx,
-    statement_text: text,
-    score: r.score || 0,
-    comment: r.comment || null,
-    updated_at: new Date().toISOString()
+    p_assessment_id: state.assessmentId,
+    p_respondent_token: state.token,
+    p_block_key: blockKey,
+    p_sign: sign,
+    p_idx: idx,
+    p_statement_text: text,
+    p_score: r.score || 0,
+    p_comment: r.comment || null
   };
-  const { error } = await state.supabase.from("responses").upsert(payload, {
-    onConflict: "assessment_id,respondent_name,block_key,statement_sign,statement_index"
-  });
-  if (error) console.warn(error);
+  setSaveState("saving");
+  const { error } = await state.supabase.rpc("upsert_response", payload);
+  if (error) {
+    console.warn("save failed", error, payload);
+    state.pendingRetries.set(id, payload);
+    setSaveState("error");
+    return;
+  }
+  state.pendingRetries.delete(id);
+  setSaveState("saved");
 }
+
+async function retryFailed() {
+  if (!state.pendingRetries.size) return;
+  const entries = [...state.pendingRetries.entries()];
+  setSaveState("saving");
+  for (const [id, payload] of entries) {
+    const { error } = await state.supabase.rpc("upsert_response", payload);
+    if (!error) state.pendingRetries.delete(id);
+  }
+  setSaveState(state.pendingRetries.size ? "error" : "saved");
+}
+document.addEventListener("click", e => {
+  if (e.target && e.target.id === "retryFailed") retryFailed();
+});
 
 async function loadMyResponses() {
   if (state.mode !== "supabase") {
@@ -697,7 +812,7 @@ async function loadMyResponses() {
     return;
   }
   const { data, error } = await state.supabase.rpc("get_my_responses", {
-    p_assessment_id: state.assessmentId, p_respondent_name: state.user.name
+    p_assessment_id: state.assessmentId, p_respondent_token: state.token
   });
   if (error) { console.warn(error); return; }
   state.responses = {};
@@ -705,6 +820,17 @@ async function loadMyResponses() {
     state.responses[rKey(r.block_key, r.statement_sign, r.statement_index)] =
       { score: r.score, comment: r.comment, sign: r.statement_sign };
   });
+}
+
+async function loadMyRespondent() {
+  if (state.mode !== "supabase") { state.submittedAt = null; return; }
+  const { data, error } = await state.supabase.rpc("get_my_respondent", {
+    p_assessment_id: state.assessmentId, p_respondent_token: state.token
+  });
+  if (error) { console.warn(error); return; }
+  const row = (data || [])[0];
+  state.submittedAt = row?.submitted_at || null;
+  renderBanner();
 }
 
 /* ---------- 7. EXTERNAL SWOT VIEW ---------- */
@@ -725,8 +851,8 @@ function renderExternal() {
           <div class="notes-list space-y-2" data-force="${f.key}" data-type="opportunity"></div>
           <div class="flex gap-1 mt-2">
             <input type="text" class="flex-1 border rounded px-2 py-1 text-xs" placeholder="Add opportunity…" data-force="${f.key}" data-type="opportunity">
-            <select class="border rounded text-xs priority-select">
-              <option value="3">3</option><option value="1">1</option><option value="2">2</option><option value="4">4</option><option value="5">5</option>
+            <select class="border rounded text-xs priority-select" title="Priority 1–5">
+              ${[1,2,3,4,5].map(n => `<option value="${n}"${n===3?" selected":""}>${n}</option>`).join("")}
             </select>
             <button class="add-note bg-emerald-600 text-white text-xs px-2 rounded" data-force="${f.key}" data-type="opportunity">+</button>
           </div>
@@ -736,8 +862,8 @@ function renderExternal() {
           <div class="notes-list space-y-2" data-force="${f.key}" data-type="threat"></div>
           <div class="flex gap-1 mt-2">
             <input type="text" class="flex-1 border rounded px-2 py-1 text-xs" placeholder="Add threat…" data-force="${f.key}" data-type="threat">
-            <select class="border rounded text-xs priority-select">
-              <option value="3">3</option><option value="1">1</option><option value="2">2</option><option value="4">4</option><option value="5">5</option>
+            <select class="border rounded text-xs priority-select" title="Priority 1–5">
+              ${[1,2,3,4,5].map(n => `<option value="${n}"${n===3?" selected":""}>${n}</option>`).join("")}
             </select>
             <button class="add-note bg-rose-600 text-white text-xs px-2 rounded" data-force="${f.key}" data-type="threat">+</button>
           </div>
@@ -746,10 +872,22 @@ function renderExternal() {
     container.appendChild(wrap);
   });
   container.querySelectorAll(".add-note").forEach(b => b.addEventListener("click", onAddNote));
+  container.querySelectorAll("input[type=text]").forEach(inp => {
+    inp.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        const btn = inp.parentElement.querySelector(".add-note");
+        if (btn) btn.click();
+      }
+    });
+  });
   loadMyExternal();
+  renderSubmitPanel();
+  applyLockedOverlay();
 }
 
 async function onAddNote(e) {
+  if (isSubmitted()) return;
   const btn = e.currentTarget;
   const force = btn.dataset.force;
   const type  = btn.dataset.type;
@@ -758,31 +896,29 @@ async function onAddNote(e) {
   const prio  = +cell.querySelector("select").value;
   const txt   = input.value.trim();
   if (!txt) return;
-  const note = {
-    id: (crypto.randomUUID ? crypto.randomUUID() : "loc-" + Date.now() + "-" + Math.random().toString(36).slice(2)),
-    force, type, note: txt, priority: prio, respondent_name: state.user.name
-  };
+
   if (state.mode === "supabase") {
-    // Can't .select().single() here — anon is blocked from SELECTing external_notes
-    // by RLS. Insert only, then reload via RPC to refresh the local list.
-    const { error } = await state.supabase.from("external_notes").insert({
-      assessment_id: state.assessmentId,
-      respondent_name: state.user.name,
-      force_category: force,
-      note_type: type,
-      note: txt,
-      priority: prio
+    setSaveState("saving");
+    const { data, error } = await state.supabase.rpc("insert_external_note", {
+      p_assessment_id: state.assessmentId,
+      p_respondent_token: state.token,
+      p_force: force, p_type: type, p_note: txt, p_priority: prio
     });
-    if (error) return alert(error.message);
+    if (error) { setSaveState("error"); return alert("Couldn't save note: " + error.message); }
+    setSaveState("saved");
     input.value = "";
     await loadMyExternal();
-    return;
   } else {
+    const note = {
+      id: (crypto.randomUUID ? crypto.randomUUID() : "loc-" + Date.now()),
+      force_category: force, note_type: type, note: txt, priority: prio,
+      respondent_name: state.user.name
+    };
     state.externalNotes.push(note);
     localStorage.setItem("bmc_swot_external_" + (state.assessmentId||"local"), JSON.stringify(state.externalNotes));
+    input.value = "";
+    paintExternalNotes();
   }
-  input.value = "";
-  paintExternalNotes();
 }
 
 async function loadMyExternal() {
@@ -790,7 +926,7 @@ async function loadMyExternal() {
     state.externalNotes = JSON.parse(localStorage.getItem("bmc_swot_external_" + (state.assessmentId||"local")) || "[]");
   } else {
     const { data, error } = await state.supabase.rpc("get_my_external", {
-      p_assessment_id: state.assessmentId, p_respondent_name: state.user.name
+      p_assessment_id: state.assessmentId, p_respondent_token: state.token
     });
     if (!error) state.externalNotes = data || [];
   }
@@ -805,8 +941,8 @@ function paintExternalNotes() {
       <div class="flex items-start gap-2 text-xs group">
         <span class="chip ${type==='opportunity'?'bg-emerald-100 text-emerald-800':'bg-rose-100 text-rose-800'}">P${n.priority}</span>
         <span class="flex-1">${escapeHtml(n.note)}</span>
-        <button title="Delete" data-delete-id="${escapeHtml(n.id||'')}"
-          class="delete-note text-slate-300 hover:text-rose-600 leading-none px-1">×</button>
+        ${isSubmitted() ? "" : `<button title="Delete" data-delete-id="${escapeHtml(n.id||'')}"
+          class="delete-note text-slate-300 hover:text-rose-600 leading-none px-1">×</button>`}
       </div>`).join("") || `<div class="text-xs text-slate-400 italic">No notes yet.</div>`;
   });
   document.querySelectorAll("#externalContainer .delete-note").forEach(b =>
@@ -814,12 +950,13 @@ function paintExternalNotes() {
 }
 
 async function onDeleteNote(e) {
+  if (isSubmitted()) return;
   const id = e.currentTarget.dataset.deleteId;
   if (!id) return;
   if (!confirm("Delete this note?")) return;
   if (state.mode === "supabase") {
     const { data, error } = await state.supabase.rpc("delete_my_external_note", {
-      p_id: id, p_respondent_name: state.user.name
+      p_id: id, p_respondent_token: state.token
     });
     if (error) return alert("Couldn't delete: " + error.message);
     if (!data) return alert("Couldn't delete — that note isn't yours.");
@@ -831,6 +968,87 @@ async function onDeleteNote(e) {
   }
 }
 
+/* ---------- 7b. SUBMIT / UNSUBMIT ---------- */
+function renderSubmitPanel() {
+  const submitted = isSubmitted();
+  const total = SWOT.reduce((a,b) => a + b.strengths.length + b.weaknesses.length, 0);
+  const done  = Object.values(state.responses).filter(r => (r.score||0) > 0).length;
+  const heading = document.getElementById("submitHeading");
+  const help    = document.getElementById("submitHelp");
+  const submit  = document.getElementById("submitBtn");
+  const unsub   = document.getElementById("unsubmitBtn");
+
+  if (submitted) {
+    heading.textContent = "Assessment submitted ✓";
+    help.textContent    = `You submitted on ${new Date(state.submittedAt).toLocaleString()}. Responses are locked. Click Unsubmit if you need to edit.`;
+    submit.classList.add("hidden");
+    unsub.classList.remove("hidden");
+  } else {
+    heading.textContent = "Ready to submit?";
+    help.textContent = `You've rated ${done} of ${total} statements. Once you submit, your answers lock (but you can unsubmit to edit again).`;
+    submit.classList.remove("hidden");
+    unsub.classList.add("hidden");
+  }
+}
+
+document.getElementById("submitBtn").addEventListener("click", async () => {
+  const total = SWOT.reduce((a,b) => a + b.strengths.length + b.weaknesses.length, 0);
+  const done  = Object.values(state.responses).filter(r => (r.score||0) > 0).length;
+  if (done < total) {
+    if (!confirm(`You've rated ${done} of ${total} statements. Submit anyway?`)) return;
+  }
+  if (state.mode !== "supabase") {
+    state.submittedAt = new Date().toISOString();
+    localStorage.setItem("bmc_swot_submitted_" + state.assessmentId, state.submittedAt);
+  } else {
+    const { data, error } = await state.supabase.rpc("submit_assessment", {
+      p_assessment_id: state.assessmentId, p_respondent_token: state.token
+    });
+    if (error) return alert("Couldn't submit: " + error.message);
+    state.submittedAt = data;
+  }
+  renderBanner();
+  renderSubmitPanel();
+  applyLockedOverlay();
+  alert("Thanks — your assessment has been submitted.");
+});
+
+document.getElementById("unsubmitBtn").addEventListener("click", async () => {
+  if (!confirm("Unsubmit and allow editing? The owner will see your status change back to in-progress.")) return;
+  if (state.mode !== "supabase") {
+    state.submittedAt = null;
+    localStorage.removeItem("bmc_swot_submitted_" + state.assessmentId);
+  } else {
+    const { error } = await state.supabase.rpc("unsubmit_assessment", {
+      p_assessment_id: state.assessmentId, p_respondent_token: state.token
+    });
+    if (error) return alert("Couldn't unsubmit: " + error.message);
+    state.submittedAt = null;
+  }
+  renderBanner();
+  renderSubmitPanel();
+  applyLockedOverlay();
+});
+
+function applyLockedOverlay() {
+  ["assessContainer","externalContainer"].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const existing = el.querySelector(":scope > .locked-overlay");
+    if (isSubmitted()) {
+      if (!existing) {
+        const o = document.createElement("div");
+        o.className = "locked-overlay";
+        o.title = "Submitted — unsubmit to edit";
+        el.style.position = "relative";
+        el.appendChild(o);
+      }
+    } else {
+      if (existing) existing.remove();
+    }
+  });
+}
+
 /* ---------- 8. DASHBOARD ---------- */
 async function loadDashboard() {
   if (state.mode === "supabase") {
@@ -838,31 +1056,28 @@ async function loadDashboard() {
     if (!key) {
       document.getElementById("dashSubtitle").textContent =
         "You are not the owner of this session. No dashboard access.";
-      document.getElementById("dashBlocks").innerHTML = "";
-      document.getElementById("dashDivergence").innerHTML = "";
-      document.getElementById("dashExternal").innerHTML = "";
+      ["dashBlocks","dashDivergence","dashExternal","respondentsList"].forEach(i => document.getElementById(i).innerHTML = "");
       return;
     }
-    const { data: resp, error: e1 } = await state.supabase.rpc("get_dashboard_responses", {
-      p_assessment_id: state.assessmentId, p_owner_key: key
-    });
-    const { data: ext,  error: e2 } = await state.supabase.rpc("get_dashboard_external", {
-      p_assessment_id: state.assessmentId, p_owner_key: key
-    });
-    if (e1 || e2) {
-      alert("Dashboard access denied. Your owner key may have been rotated.");
+    const [r1, r2, r3] = await Promise.all([
+      state.supabase.rpc("get_dashboard_responses",   { p_assessment_id: state.assessmentId, p_owner_key: key }),
+      state.supabase.rpc("get_dashboard_external",    { p_assessment_id: state.assessmentId, p_owner_key: key }),
+      state.supabase.rpc("get_dashboard_respondents", { p_assessment_id: state.assessmentId, p_owner_key: key })
+    ]);
+    if (r1.error || r2.error || r3.error) {
+      alert("Dashboard access denied. Your owner key may be invalid.");
       return;
     }
-    state.allResponses = resp || [];
-    state.allExternal  = ext || [];
+    state.allResponses   = r1.data || [];
+    state.allExternal    = r2.data || [];
+    state.allRespondents = r3.data || [];
   } else {
-    // In local mode, the only respondent is the current user.
     state.allResponses = Object.entries(state.responses).map(([id, r]) => {
       const [blockKey, sign, idxStr] = id.split("|");
       const idx = +idxStr;
       const b = SWOT.find(x => x.key === blockKey);
       return {
-        assessment_id: state.assessmentId,
+        respondent_token: state.token,
         respondent_name: state.user.name || "You",
         respondent_role: state.user.role,
         block_key: blockKey, statement_sign: sign, statement_index: idx,
@@ -876,23 +1091,37 @@ async function loadDashboard() {
       note_type: n.note_type || n.type,
       note: n.note, priority: n.priority
     }));
+    state.allRespondents = state.user.name ? [{
+      respondent_token: state.token, name: state.user.name, role: state.user.role,
+      submitted_at: state.submittedAt,
+      response_count: Object.values(state.responses).filter(r => (r.score||0) > 0).length
+    }] : [];
   }
   renderDashboard();
 }
 
 function renderDashboard() {
+  const submitted = state.allRespondents.filter(r => r.submitted_at).length;
+  const total     = state.allRespondents.length;
   document.getElementById("dashSubtitle").textContent =
-    `Session: ${state.assessmentName || "—"} · ${uniqueRespondents().length} respondent(s)`;
+    `Session: ${state.assessmentName || "—"} · ${submitted}/${total} submitted`;
 
   // Respondents list
-  const roles = {};
-  uniqueRespondents().forEach(n => {
-    const row = state.allResponses.find(r => r.respondent_name === n);
-    roles[n] = row?.respondent_role || "";
-  });
-  document.getElementById("respondentsList").innerHTML = uniqueRespondents().map(n =>
-    `<span class="chip bg-slate-100 text-slate-700 mr-2 mb-2">${escapeHtml(n)}${roles[n]?` · ${escapeHtml(roles[n])}`:""}</span>`
-  ).join("") || `<span class="text-slate-400 italic text-sm">No responses yet.</span>`;
+  const total_items = SWOT.reduce((a,b) => a + b.strengths.length + b.weaknesses.length, 0);
+  document.getElementById("respondentsList").innerHTML = state.allRespondents.length === 0
+    ? `<span class="text-slate-400 italic text-sm">No respondents yet.</span>`
+    : state.allRespondents.map(r => {
+        const statusChip = r.submitted_at
+          ? `<span class="chip bg-emerald-100 text-emerald-800">✓ Submitted</span>`
+          : (r.response_count > 0
+              ? `<span class="chip bg-amber-100 text-amber-800">In progress (${r.response_count}/${total_items})</span>`
+              : `<span class="chip bg-slate-100 text-slate-600">Not started</span>`);
+        return `<div class="flex items-center gap-2 mb-1">
+          <span class="font-medium">${escapeHtml(r.name)}</span>
+          ${r.role ? `<span class="text-slate-500 text-xs">· ${escapeHtml(r.role)}</span>` : ""}
+          ${statusChip}
+        </div>`;
+      }).join("");
 
   // Per-block averages
   const container = document.getElementById("dashBlocks");
@@ -915,11 +1144,11 @@ function renderDashboard() {
           <div>− ${wAvg.toFixed(2)} / 5</div>
         </div>
       </div>
-      <div class="space-y-1.5 mb-2">
-        ${sAvgRows.map(r => bar(r,"+")).join("")}
+      <div class="space-y-2 mb-2">
+        ${sAvgRows.map(r => barWithComments(r,"+",block.key)).join("")}
       </div>
-      <div class="space-y-1.5">
-        ${wAvgRows.map(r => bar(r,"-")).join("")}
+      <div class="space-y-2">
+        ${wAvgRows.map(r => barWithComments(r,"-",block.key)).join("")}
       </div>`;
     container.appendChild(card);
   });
@@ -974,16 +1203,12 @@ function renderDashboard() {
   });
 }
 
-function uniqueRespondents() {
-  const s = new Set(state.allResponses.map(r => r.respondent_name));
-  state.allExternal.forEach(n => s.add(n.respondent_name));
-  return [...s].filter(Boolean);
-}
-
 function avgRow(blockKey, sign, idx, text) {
   const rows = state.allResponses.filter(x =>
     x.block_key === blockKey && x.statement_sign === sign && x.statement_index === idx && x.score > 0);
-  return { text, avg: avg(rows.map(r => r.score)), n: rows.length };
+  const comments = state.allResponses.filter(x =>
+    x.block_key === blockKey && x.statement_sign === sign && x.statement_index === idx && x.comment && x.comment.trim());
+  return { text, avg: avg(rows.map(r => r.score)), n: rows.length, comments };
 }
 function avg(arr) { return arr.length ? arr.reduce((a,b)=>a+b,0)/arr.length : 0; }
 function stats(arr) {
@@ -993,22 +1218,34 @@ function stats(arr) {
   const stdev = Math.sqrt(avg(arr.map(x => (x-mean)**2)));
   return { mean, stdev, n };
 }
-function bar(r, sign) {
+function barWithComments(r, sign, blockKey) {
   const pct = (r.avg/5)*100;
   const color = sign === "+" ? "#16a34a" : "#dc2626";
+  const commentsHtml = r.comments.length ? `
+    <details class="mt-1">
+      <summary class="text-[10px] text-slate-500">${r.comments.length} comment${r.comments.length>1?"s":""}</summary>
+      <div class="mt-1 space-y-1">
+        ${r.comments.map(c => `<div class="text-[11px] text-slate-700 border-l-2 border-slate-200 pl-2">
+          <span class="italic">"${escapeHtml(c.comment)}"</span>
+          <span class="text-slate-400">— ${escapeHtml(c.respondent_name || "")}</span>
+        </div>`).join("")}
+      </div>
+    </details>` : "";
   return `
     <div>
       <div class="flex justify-between text-xs">
-        <span class="truncate pr-2">${escapeHtml(r.text)}</span>
+        <span class="pr-2 flex-1">${escapeHtml(r.text)}</span>
         <span class="text-slate-500 whitespace-nowrap">${r.avg.toFixed(1)} (n=${r.n})</span>
       </div>
       <div class="bar"><span style="width:${pct}%;background:${color}"></span></div>
+      ${commentsHtml}
     </div>`;
 }
-function noteLine(n, type) {
+function noteLine(n) {
+  const type = n.note_type;
   return `<div class="flex items-start gap-2 mb-1">
     <span class="chip ${type==='opportunity'?'bg-emerald-100 text-emerald-800':'bg-rose-100 text-rose-800'}">P${n.priority||"-"}</span>
-    <span class="flex-1">${escapeHtml(n.note)} <span class="text-slate-400">— ${escapeHtml(n.respondent_name)}</span></span>
+    <span class="flex-1">${escapeHtml(n.note)} <span class="text-slate-400">— ${escapeHtml(n.respondent_name||"")}</span></span>
   </div>`;
 }
 
@@ -1017,11 +1254,13 @@ document.getElementById("exportCsv").addEventListener("click", exportCsv);
 document.getElementById("exportJson").addEventListener("click", exportJson);
 
 function exportCsv() {
-  const lines = [["respondent","role","group","block","sign","statement","score","comment"].join(",")];
+  const lines = [["respondent","role","submitted_at","group","block","sign","statement","score","comment"].join(",")];
+  const rMap = Object.fromEntries(state.allRespondents.map(r => [r.respondent_token, r]));
   state.allResponses.forEach(r => {
     const b = SWOT.find(x => x.key===r.block_key);
+    const meta = rMap[r.respondent_token] || {};
     lines.push([
-      r.respondent_name, r.respondent_role||"",
+      r.respondent_name, r.respondent_role||"", meta.submitted_at||"",
       b?.group||"", b?.title||r.block_key,
       r.statement_sign, q(r.statement_text), r.score, q(r.comment||"")
     ].join(","));
@@ -1036,8 +1275,9 @@ function exportCsv() {
 function exportJson() {
   downloadFile("bmc-swot-export.json", JSON.stringify({
     session: state.assessmentName,
-    responses: state.allResponses,
-    external:  state.allExternal
+    respondents: state.allRespondents,
+    responses:   state.allResponses,
+    external:    state.allExternal
   }, null, 2));
 }
 function q(s) { if (s==null) return ""; const t = String(s).replaceAll('"','""'); return /[,\n"]/.test(t) ? `"${t}"` : t; }
@@ -1049,8 +1289,6 @@ function downloadFile(name, content) {
 }
 
 /* ---------- 9. LIVE DASHBOARD POLLING ---------- */
-// Realtime via postgres_changes respects RLS; because anon can't SELECT the
-// response tables, we poll every 10s while the owner is viewing the dashboard.
 let pollTimer = null;
 function startDashboardPolling() {
   stopDashboardPolling();
@@ -1074,13 +1312,15 @@ function escapeHtml(s) {
   renderSetup();
   connectSupabase();
   await refreshAssessments();
-  if (state.mode === "supabase" && state.assessmentId && state.user.name) {
+  if (state.mode === "supabase" && state.assessmentId && state.assessmentId !== "local" && state.user.name) {
+    await loadMyRespondent();
     await loadMyResponses();
     await loadMyExternal();
     if (isOwner()) startDashboardPolling();
   } else if (state.mode === "local") {
     state.responses = JSON.parse(localStorage.getItem("bmc_swot_responses_" + (state.assessmentId||"local")) || "{}");
     state.externalNotes = JSON.parse(localStorage.getItem("bmc_swot_external_" + (state.assessmentId||"local")) || "[]");
+    state.submittedAt = localStorage.getItem("bmc_swot_submitted_" + (state.assessmentId||"local"));
   }
   showView("setup");
 })();
