@@ -64,7 +64,7 @@
       <div class="bg-white border border-slate-200 rounded-lg p-5">
         <h2 class="font-semibold mb-3">1. You</h2>
         <label class="block text-sm font-medium">Your name</label>
-        <input id="userName" class="w-full border rounded px-3 py-2 text-sm" placeholder="e.g. Maxime P.">
+        <input id="userName" class="w-full border rounded px-3 py-2 text-sm" placeholder="John Smith">
         <label class="block text-sm font-medium mt-3">Role (optional)</label>
         <input id="userRole" class="w-full border rounded px-3 py-2 text-sm" placeholder="e.g. CEO">
         <p class="text-xs text-slate-500 mt-3">
@@ -101,19 +101,6 @@
       </div>
     </details>
 
-    <details class="mt-6 bg-white border border-slate-200 rounded-lg p-4 text-sm">
-      <summary class="font-semibold">Advanced: override Supabase connection</summary>
-      <p class="text-slate-600 mt-2 mb-3 text-xs">This app ships with a baked-in Supabase project. Only override this if you're forking the app to point at a different Supabase instance.</p>
-      <label class="block text-sm font-medium mt-2">Supabase URL</label>
-      <input id="cfgUrl"     class="w-full border rounded px-3 py-2 text-sm" placeholder="https://xxxxx.supabase.co">
-      <label class="block text-sm font-medium mt-3">Supabase publishable (anon) key</label>
-      <input id="cfgKey"     class="w-full border rounded px-3 py-2 text-sm" placeholder="sb_publishable_...">
-      <div class="flex gap-2 mt-3">
-        <button id="saveConfig"  class="bg-slate-900 text-white text-sm px-3 py-2 rounded">Save override</button>
-        <button id="clearConfig" class="text-sm px-3 py-2 rounded border">Reset to baked-in</button>
-      </div>
-      <div id="connStatus" class="text-xs mt-2 text-slate-500"></div>
-    </details>
   </section>
 
   <!-- ASSESS VIEW -->
@@ -185,16 +172,29 @@
       </div>
     </div>
 
+    <!-- Executive summary strip -->
+    <div id="dashSummary" class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6"></div>
+
     <div class="bg-white border border-slate-200 rounded-lg p-4 mb-6">
       <h2 class="font-semibold mb-2">Respondents</h2>
       <div id="respondentsList" class="text-sm text-slate-700"></div>
     </div>
+
+    <!-- Block health matrix -->
+    <h2 class="text-lg font-semibold mb-1">Block health matrix</h2>
+    <p class="text-slate-500 text-xs mb-3">All 9 blocks side-by-side, sorted worst-first by net score (strengths − weaknesses). <b>Contested</b> = team rates both strengths and weaknesses high — usually means "it depends on which part of the business."</p>
+    <div id="dashMatrix" class="bg-white border border-slate-200 rounded-lg p-4 mb-6 overflow-x-auto"></div>
 
     <h2 class="text-lg font-semibold mb-3">Per-block profile (team average)</h2>
     <div id="dashBlocks" class="grid md:grid-cols-2 gap-5"></div>
 
     <h2 class="text-lg font-semibold mt-8 mb-3">Divergence — where the team disagrees most</h2>
     <div id="dashDivergence" class="bg-white border border-slate-200 rounded-lg p-4"></div>
+
+    <!-- Top cross-force priorities -->
+    <h2 class="text-lg font-semibold mt-8 mb-1">Top priorities from external scan</h2>
+    <p class="text-slate-500 text-xs mb-3">Highest-priority items pooled across all four external forces. Use this to decide what the team should act on or watch next.</p>
+    <div id="dashTopPriorities" class="grid md:grid-cols-2 gap-5 mb-6"></div>
 
     <h2 class="text-lg font-semibold mt-8 mb-3">External SWOT — all notes</h2>
     <div id="dashExternal" class="grid md:grid-cols-2 gap-5"></div>
@@ -371,11 +371,6 @@ const EXTERNAL_FORCES = [
 ];
 
 /* ---------- 2. APP STATE ---------- */
-function loadCfg() {
-  const stored = JSON.parse(localStorage.getItem("bmc_swot_cfg") || "null");
-  if (stored && stored.url && stored.key) return stored;
-  return { ...DEFAULT_CONFIG };
-}
 function getOrCreateRespondentToken() {
   let t = localStorage.getItem("bmc_swot_respondent_token");
   if (!t) {
@@ -387,7 +382,7 @@ function getOrCreateRespondentToken() {
 }
 
 const state = {
-  cfg: loadCfg(),
+  cfg: { ...DEFAULT_CONFIG },
   user: JSON.parse(localStorage.getItem("bmc_swot_user") || "{}"),
   token: getOrCreateRespondentToken(),
   assessmentId: localStorage.getItem("bmc_swot_assessment") || null,
@@ -501,33 +496,9 @@ document.querySelectorAll(".nav-btn, .nav-btn-link").forEach(b => {
 
 /* ---------- 5. SETUP VIEW ---------- */
 function renderSetup() {
-  const usingDefault = state.cfg.url === DEFAULT_CONFIG.url && state.cfg.key === DEFAULT_CONFIG.key;
-  document.getElementById("cfgUrl").value    = usingDefault ? "" : (state.cfg.url || "");
-  document.getElementById("cfgKey").value    = usingDefault ? "" : (state.cfg.key || "");
-  document.getElementById("cfgUrl").placeholder = DEFAULT_CONFIG.url;
-  document.getElementById("cfgKey").placeholder = "sb_publishable_… (baked-in by default)";
   document.getElementById("userName").value  = state.user.name || "";
   document.getElementById("userRole").value  = state.user.role || "";
 }
-
-document.getElementById("saveConfig").addEventListener("click", async () => {
-  const url = document.getElementById("cfgUrl").value.trim();
-  const key = document.getElementById("cfgKey").value.trim();
-  if (!url || !key) return alert("Enter both URL and key, or click Reset.");
-  state.cfg = { url, key };
-  localStorage.setItem("bmc_swot_cfg", JSON.stringify(state.cfg));
-  const ok = connectSupabase();
-  document.getElementById("connStatus").textContent = ok ? "Override saved." : "Couldn't connect with those credentials.";
-  await refreshAssessments();
-});
-document.getElementById("clearConfig").addEventListener("click", async () => {
-  localStorage.removeItem("bmc_swot_cfg");
-  state.cfg = { ...DEFAULT_CONFIG };
-  connectSupabase();
-  renderSetup();
-  document.getElementById("connStatus").textContent = "Reset to baked-in configuration.";
-  await refreshAssessments();
-});
 
 async function refreshAssessments() {
   const sel = document.getElementById("assessmentSelect");
@@ -1117,6 +1088,19 @@ function renderDashboard() {
   document.getElementById("dashSubtitle").textContent =
     `Session: ${state.assessmentName || "—"} · ${submitted}/${total} submitted`;
 
+  // Compute per-block aggregates once — shared by summary strip, matrix, and bars.
+  const blockStats = SWOT.map(block => {
+    const sRows = block.strengths.map((t,i)=>avgRow(block.key,"+",i,t));
+    const wRows = block.weaknesses.map((t,i)=>avgRow(block.key,"-",i,t));
+    const sAvg  = avg(sRows.map(r => r.avg));
+    const wAvg  = avg(wRows.map(r => r.avg));
+    return { block, sRows, wRows, sAvg, wAvg, net: sAvg - wAvg };
+  });
+
+  renderSummaryStrip(blockStats);
+  renderBlockMatrix(blockStats);
+  renderTopPriorities();
+
   // Respondents list
   const total_items = SWOT.reduce((a,b) => a + b.strengths.length + b.weaknesses.length, 0);
   document.getElementById("respondentsList").innerHTML = state.allRespondents.length === 0
@@ -1137,13 +1121,9 @@ function renderDashboard() {
   // Per-block averages
   const container = document.getElementById("dashBlocks");
   container.innerHTML = "";
-  SWOT.forEach(block => {
+  blockStats.forEach(({ block, sRows, wRows, sAvg, wAvg }) => {
     const card = document.createElement("div");
     card.className = "block-card bg-white border border-slate-200 rounded-lg p-4";
-    const sAvgRows = block.strengths.map((txt, idx) => avgRow(block.key, "+", idx, txt));
-    const wAvgRows = block.weaknesses.map((txt, idx) => avgRow(block.key, "-", idx, txt));
-    const sAvg = avg(sAvgRows.map(r => r.avg));
-    const wAvg = avg(wAvgRows.map(r => r.avg));
     card.innerHTML = `
       <div class="flex items-center justify-between mb-2">
         <div>
@@ -1156,10 +1136,10 @@ function renderDashboard() {
         </div>
       </div>
       <div class="space-y-2 mb-2">
-        ${sAvgRows.map(r => barWithComments(r,"+",block.key)).join("")}
+        ${sRows.map(r => barWithComments(r,"+")).join("")}
       </div>
       <div class="space-y-2">
-        ${wAvgRows.map(r => barWithComments(r,"-",block.key)).join("")}
+        ${wRows.map(r => barWithComments(r,"-")).join("")}
       </div>`;
     container.appendChild(card);
   });
@@ -1203,15 +1183,146 @@ function renderDashboard() {
       <div class="grid grid-cols-2 gap-3 text-xs">
         <div>
           <div class="font-semibold text-emerald-700 mb-1">Opportunities (${opps.length})</div>
-          ${opps.map(n=>noteLine(n,"opportunity")).join("") || `<div class="italic text-slate-400">—</div>`}
+          ${opps.map(n=>noteLine(n)).join("") || `<div class="italic text-slate-400">—</div>`}
         </div>
         <div>
           <div class="font-semibold text-rose-700 mb-1">Threats (${thr.length})</div>
-          ${thr.map(n=>noteLine(n,"threat")).join("") || `<div class="italic text-slate-400">—</div>`}
+          ${thr.map(n=>noteLine(n)).join("") || `<div class="italic text-slate-400">—</div>`}
         </div>
       </div>`;
     ext.appendChild(card);
   });
+}
+
+/* ---------- 8b. DASHBOARD WIDGETS ---------- */
+
+// Classify a block from its S/W averages. Thresholds chosen to feel intuitive
+// on a 1–5 scale: 3.5 is "the team agrees this is notably true".
+function blockStatus(sAvg, wAvg) {
+  const sHigh = sAvg >= 3.5, wHigh = wAvg >= 3.5;
+  const sLow  = sAvg <= 2.0, wLow  = wAvg <= 2.0;
+  if (sHigh && wLow)   return { label: "Strong",    cls: "bg-emerald-100 text-emerald-800" };
+  if (sLow  && wHigh)  return { label: "At risk",   cls: "bg-rose-100 text-rose-800" };
+  if (sHigh && wHigh)  return { label: "Contested", cls: "bg-amber-100 text-amber-800" };
+  if (sLow  && wLow)   return { label: "Quiet",     cls: "bg-slate-100 text-slate-600" };
+  return                      { label: "Balanced",  cls: "bg-sky-100 text-sky-800" };
+}
+
+function renderSummaryStrip(blockStats) {
+  const haveData = blockStats.some(b => b.sAvg > 0 || b.wAvg > 0);
+  const el = document.getElementById("dashSummary");
+  if (!haveData) {
+    el.innerHTML = `<div class="col-span-full text-sm text-slate-400 italic bg-white border border-slate-200 rounded-lg p-4">Summary will appear once someone rates at least one statement.</div>`;
+    return;
+  }
+  const avgS = avg(blockStats.map(b => b.sAvg));
+  const avgW = avg(blockStats.map(b => b.wAvg));
+  const net  = avgS - avgW;
+  const sortedByNet = [...blockStats].sort((a,b) => a.net - b.net);
+  const weakest  = sortedByNet[0];
+  const strongest = sortedByNet[sortedByNet.length - 1];
+
+  const totalStatements = SWOT.reduce((a,b) => a + b.strengths.length + b.weaknesses.length, 0);
+  const submittedCount  = state.allRespondents.filter(r => r.submitted_at).length;
+  const respondents     = state.allRespondents.length;
+  const completionPct   = respondents ? Math.round((submittedCount / respondents) * 100) : 0;
+
+  const netColor = net > 0.5 ? "text-emerald-700" : (net < -0.5 ? "text-rose-700" : "text-slate-700");
+
+  el.innerHTML = `
+    ${statCard("Completion",    `${submittedCount}/${respondents}`, `${completionPct}% submitted`,"")}
+    ${statCard("Avg strengths", `${avgS.toFixed(2)}`, "of 5, across all blocks","text-emerald-700")}
+    ${statCard("Avg weaknesses",`${avgW.toFixed(2)}`, "of 5, across all blocks","text-rose-700")}
+    ${statCard("Net position",  `${net>=0?"+":""}${net.toFixed(2)}`, "strengths minus weaknesses", netColor)}
+    ${statCard("Biggest gap",   escapeHtml(weakest.block.title), `net ${weakest.net>=0?"+":""}${weakest.net.toFixed(2)}`,"text-rose-700")}
+  `;
+}
+function statCard(label, big, sub, bigClass) {
+  return `<div class="bg-white border border-slate-200 rounded-lg p-3">
+    <div class="text-[10px] uppercase tracking-wide text-slate-500">${label}</div>
+    <div class="text-xl font-bold ${bigClass||""}">${big}</div>
+    <div class="text-xs text-slate-500">${sub}</div>
+  </div>`;
+}
+
+function renderBlockMatrix(blockStats) {
+  const el = document.getElementById("dashMatrix");
+  const haveData = blockStats.some(b => b.sAvg > 0 || b.wAvg > 0);
+  if (!haveData) {
+    el.innerHTML = `<div class="text-sm text-slate-400 italic">Will populate once responses come in.</div>`;
+    return;
+  }
+  const sorted = [...blockStats].sort((a,b) => a.net - b.net);  // worst first
+  el.innerHTML = `
+    <table class="w-full text-sm">
+      <thead class="text-xs uppercase text-slate-500">
+        <tr>
+          <th class="text-left py-1">Block</th>
+          <th class="text-left py-1">Area</th>
+          <th class="text-left py-1">Strengths (+)</th>
+          <th class="text-left py-1">Weaknesses (−)</th>
+          <th class="text-center py-1">Net</th>
+          <th class="text-center py-1">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${sorted.map(({ block, sAvg, wAvg, net }) => {
+          const st = blockStatus(sAvg, wAvg);
+          return `<tr class="border-t">
+            <td class="py-1.5 font-medium">
+              <span class="inline-block w-2.5 h-2.5 rounded-sm mr-1.5 align-middle" style="background:${block.color}"></span>
+              ${escapeHtml(block.title)}
+            </td>
+            <td class="py-1.5 text-xs text-slate-500">${escapeHtml(block.group)}</td>
+            <td class="py-1.5">${miniBar(sAvg, "#16a34a")}</td>
+            <td class="py-1.5">${miniBar(wAvg, "#dc2626")}</td>
+            <td class="py-1.5 text-center font-semibold ${net>0?"text-emerald-700":(net<0?"text-rose-700":"text-slate-600")}">${net>=0?"+":""}${net.toFixed(2)}</td>
+            <td class="py-1.5 text-center"><span class="chip ${st.cls}">${st.label}</span></td>
+          </tr>`;
+        }).join("")}
+      </tbody>
+    </table>`;
+}
+function miniBar(v, color) {
+  const pct = Math.max(0, Math.min(100, (v/5)*100));
+  return `<div class="flex items-center gap-2">
+    <div class="bar w-24"><span style="width:${pct}%;background:${color}"></span></div>
+    <span class="text-xs text-slate-600 font-mono w-8">${v.toFixed(2)}</span>
+  </div>`;
+}
+
+function renderTopPriorities() {
+  const el = document.getElementById("dashTopPriorities");
+  if (!state.allExternal.length) {
+    el.innerHTML = `<div class="col-span-full bg-white border border-slate-200 rounded-lg p-4 text-sm text-slate-400 italic">No external notes yet.</div>`;
+    return;
+  }
+  const forceLabel = Object.fromEntries(EXTERNAL_FORCES.map(f => [f.key, f.title]));
+  const rank = (type, limit) => state.allExternal
+    .filter(n => n.note_type === type)
+    .sort((a,b) => (b.priority||0) - (a.priority||0))
+    .slice(0, limit);
+  const topOpps = rank("opportunity", 5);
+  const topThr  = rank("threat", 5);
+
+  const renderList = (items, type) => items.length ? items.map(n => `
+    <div class="flex items-start gap-2 text-sm mb-2">
+      <span class="chip ${type==='opportunity'?'bg-emerald-100 text-emerald-800':'bg-rose-100 text-rose-800'}">P${n.priority||"-"}</span>
+      <div class="flex-1">
+        <div>${escapeHtml(n.note)}</div>
+        <div class="text-[10px] text-slate-400">${escapeHtml(forceLabel[n.force_category]||n.force_category)} · ${escapeHtml(n.respondent_name||"")}</div>
+      </div>
+    </div>`).join("") : `<div class="italic text-slate-400 text-sm">None yet.</div>`;
+
+  el.innerHTML = `
+    <div class="bg-white border border-slate-200 rounded-lg p-4">
+      <h3 class="font-semibold text-emerald-700 mb-2">Top opportunities</h3>
+      ${renderList(topOpps, "opportunity")}
+    </div>
+    <div class="bg-white border border-slate-200 rounded-lg p-4">
+      <h3 class="font-semibold text-rose-700 mb-2">Top threats</h3>
+      ${renderList(topThr, "threat")}
+    </div>`;
 }
 
 function avgRow(blockKey, sign, idx, text) {
@@ -1229,7 +1340,7 @@ function stats(arr) {
   const stdev = Math.sqrt(avg(arr.map(x => (x-mean)**2)));
   return { mean, stdev, n };
 }
-function barWithComments(r, sign, blockKey) {
+function barWithComments(r, sign) {
   const pct = (r.avg/5)*100;
   const color = sign === "+" ? "#16a34a" : "#dc2626";
   const commentsHtml = r.comments.length ? `
