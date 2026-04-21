@@ -17,6 +17,8 @@
   .dot:focus-visible { outline: 2px solid #2563eb; outline-offset: 2px; }
   .dot.filled-plus  { background-color: #16a34a; border-color: #15803d; }
   .dot.filled-minus { background-color: #dc2626; border-color: #b91c1c; }
+  .bipolar .dot[data-sign="+"]:not(.filled-plus)  { border-color: #a7f3d0; }
+  .bipolar .dot[data-sign="-"]:not(.filled-minus) { border-color: #fecaca; }
   .block-card { break-inside: avoid; }
   .bar { height: 10px; border-radius: 6px; background: #e5e7eb; overflow: hidden; }
   .bar > span { display: block; height: 100%; }
@@ -573,11 +575,11 @@ const I18N = {
     "setup.unlock":  "Unlock",
 
     "assess.title": "SWOT assessment — 9 building blocks",
-    "assess.intro": "For each statement, click a dot 1→5 to reflect how strongly it applies to your business today. Green dots = strengths (+), red dots = weaknesses (−). Click the same dot again to clear.",
+    "assess.intro": "38 pairs of opposing statements. For each pair, click one dot on the side you agree with, 1–5 for how strongly it applies. Green = strength, red = weakness, no neutral. Click the same dot again to clear.",
     "assess.backSetup":  "← Back to setup",
     "assess.nextExternal": "Next: External SWOT →",
-    "assess.strengths":  "Strengths (+)",
-    "assess.weaknesses": "Weaknesses (−)",
+    "assess.strengths":  "Strength",
+    "assess.weaknesses": "Weakness",
     "assess.commentPlaceholder": "Optional comment…",
     "assess.progressRated": "{done} / {total} rated",
     "assess.ariaStrength": "Strength {n} of 5",
@@ -723,13 +725,13 @@ const I18N = {
     "setup.unlock":  "Déverrouiller",
 
     "assess.title": "Évaluation SWOT — 9 blocs",
-    "assess.intro": "Pour chaque énoncé, cliquez un point 1→5 pour refléter la force avec laquelle il s'applique à votre entreprise aujourd'hui. Points verts = forces (+), points rouges = faiblesses (−). Cliquez à nouveau sur le même point pour effacer.",
+    "assess.intro": "38 paires d'énoncés opposés. Pour chaque paire, cliquez un point du côté avec lequel vous êtes d'accord, de 1 à 5 selon l'intensité. Vert = force, rouge = faiblesse, pas de neutre. Cliquez à nouveau sur le même point pour effacer.",
     "assess.backSetup":  "← Retour à la configuration",
     "assess.nextExternal": "Suivant : SWOT externe →",
-    "assess.strengths":  "Forces (+)",
-    "assess.weaknesses": "Faiblesses (−)",
+    "assess.strengths":  "Force",
+    "assess.weaknesses": "Faiblesse",
     "assess.commentPlaceholder": "Commentaire facultatif…",
-    "assess.progressRated": "{done} / {total} évalués",
+    "assess.progressRated": "{done} / {total} évaluées",
     "assess.ariaStrength": "Force {n} sur 5",
     "assess.ariaWeakness": "Faiblesse {n} sur 5",
 
@@ -1198,6 +1200,7 @@ function renderAssess() {
     card.className = "block-card bg-white border border-slate-200 rounded-lg p-4";
     const sArr = block.strengths[state.lang] || block.strengths.en;
     const wArr = block.weaknesses[state.lang] || block.weaknesses.en;
+    const pairs = sArr.map((posText, i) => pairRowHTML(block.key, i, posText, wArr[i])).join("");
     card.innerHTML = `
       <div class="flex items-center justify-between mb-3">
         <div>
@@ -1206,99 +1209,134 @@ function renderAssess() {
         </div>
         <div class="w-6 h-6 rounded" style="background:${block.color}"></div>
       </div>
-      <div>
-        <div class="flex items-center justify-between mb-1">
-          <div class="text-xs font-semibold text-emerald-700">${t("assess.strengths")}</div>
-          <div class="text-[10px] text-slate-400">1 &nbsp;&nbsp; 2 &nbsp;&nbsp; 3 &nbsp;&nbsp; 4 &nbsp;&nbsp; 5</div>
-        </div>
-        <div class="space-y-2 mb-4">
-          ${sArr.map((s,i)=>rowHTML(block.key,"+",i,s)).join("")}
-        </div>
-        <div class="flex items-center justify-between mb-1">
-          <div class="text-xs font-semibold text-rose-700">${t("assess.weaknesses")}</div>
-          <div class="text-[10px] text-slate-400">1 &nbsp;&nbsp; 2 &nbsp;&nbsp; 3 &nbsp;&nbsp; 4 &nbsp;&nbsp; 5</div>
-        </div>
-        <div class="space-y-2">
-          ${wArr.map((s,i)=>rowHTML(block.key,"-",i,s)).join("")}
-        </div>
-      </div>
-    `;
+      <div class="space-y-3">${pairs}</div>`;
     container.appendChild(card);
   });
 
-  container.querySelectorAll(".dot").forEach(d => d.addEventListener("click", onDotClick));
-  container.querySelectorAll("textarea.comment").forEach(ta => ta.addEventListener("blur", onCommentBlur));
+  container.querySelectorAll(".bipolar .dot").forEach(d => d.addEventListener("click", onPairDotClick));
+  container.querySelectorAll("textarea.pair-comment").forEach(ta => ta.addEventListener("blur", onPairCommentBlur));
 
-  Object.entries(state.responses).forEach(([k, v]) => {
-    paintDots(k, v.score);
-    const ta = document.querySelector(`textarea.comment[data-id="${CSS.escape(k)}"]`);
-    if (ta && v.comment) ta.value = v.comment;
+  // Restore state into painted dots and comment fields
+  SWOT.forEach(block => {
+    block.strengths.en.forEach((_, i) => {
+      paintPair(block.key, i);
+      const pos = state.responses[rKey(block.key, "+", i)];
+      if (pos?.comment) {
+        const ta = document.querySelector(`textarea.pair-comment[data-pair="${CSS.escape(block.key + "|" + i)}"]`);
+        if (ta) ta.value = pos.comment;
+      }
+    });
   });
   updateProgress();
   applyLockedOverlay();
 }
 
-function rowHTML(blockKey, sign, idx, text) {
-  const id = rKey(blockKey, sign, idx);
-  const aria = sign === "+" ? t("assess.ariaStrength") : t("assess.ariaWeakness");
+function pairRowHTML(blockKey, idx, posText, negText) {
+  const pair = `${blockKey}|${idx}`;
+  const ariaS = t("assess.ariaStrength");
+  const ariaW = t("assess.ariaWeakness");
+  // Positive side: dots displayed 5→1 (outer→inner) so intensity fills toward
+  // centre. Negative side: dots 1→5 (inner→outer), symmetric.
+  const posDots = [5,4,3,2,1].map(n =>
+    `<button type="button" class="dot" data-sign="+" data-n="${n}"
+       aria-label="${escapeHtml(ariaS.replaceAll("{n}", n))}"></button>`).join("");
+  const negDots = [1,2,3,4,5].map(n =>
+    `<button type="button" class="dot" data-sign="-" data-n="${n}"
+       aria-label="${escapeHtml(ariaW.replaceAll("{n}", n))}"></button>`).join("");
   return `
-    <div class="grid grid-cols-[1fr_auto] gap-3 items-start" data-row="${id}">
-      <div>
-        <div class="text-sm leading-snug">${escapeHtml(text)}</div>
-        <textarea class="comment mt-1 w-full text-xs border rounded px-2 py-1" rows="1"
-          placeholder="${escapeHtml(t("assess.commentPlaceholder"))}" data-id="${id}"></textarea>
+    <div class="pair-row border-b border-slate-100 pb-3 last:border-0 last:pb-0">
+      <div class="grid md:grid-cols-[1fr_auto_1fr] gap-2 md:gap-3 items-center">
+        <div class="text-sm leading-snug text-emerald-900 md:text-right">${escapeHtml(posText)}</div>
+        <div class="bipolar flex items-center justify-center gap-2" data-pair="${pair}">
+          <div class="flex gap-1.5">${posDots}</div>
+          <div class="text-slate-300 select-none">·</div>
+          <div class="flex gap-1.5">${negDots}</div>
+        </div>
+        <div class="text-sm leading-snug text-rose-900 md:text-left">${escapeHtml(negText)}</div>
       </div>
-      <div class="flex gap-1.5 pt-0.5" data-dots="${id}" data-sign="${sign}">
-        ${[1,2,3,4,5].map(n => `
-          <button type="button" class="dot" data-n="${n}" data-id="${id}" data-sign="${sign}"
-            aria-label="${escapeHtml(aria.replaceAll("{n}", n))}"></button>`).join("")}
-      </div>
+      <textarea class="pair-comment mt-2 w-full text-xs border rounded px-2 py-1" rows="1"
+        placeholder="${escapeHtml(t("assess.commentPlaceholder"))}" data-pair="${pair}"></textarea>
     </div>`;
 }
 
-function onDotClick(e) {
+function onPairDotClick(e) {
   if (isSubmitted()) return;
-  const el = e.currentTarget;
-  const id = el.dataset.id;
-  const n = +el.dataset.n;
-  const sign = el.dataset.sign;
-  const current = state.responses[id]?.score || 0;
-  const score = (current === n) ? 0 : n;
-  state.responses[id] = { ...(state.responses[id] || { sign }), score, sign };
-  paintDots(id, score);
-  updateProgress();
-  persistResponse(id);
-}
-function paintDots(id, score) {
-  const row = document.querySelector(`[data-dots="${CSS.escape(id)}"]`);
-  if (!row) return;
-  const sign = row.dataset.sign;
-  row.querySelectorAll(".dot").forEach(d => {
-    d.classList.remove("filled-plus","filled-minus");
-    if (+d.dataset.n <= score && score > 0) {
-      d.classList.add(sign === "+" ? "filled-plus" : "filled-minus");
+  const btn = e.currentTarget;
+  const bipolar = btn.closest(".bipolar");
+  const [blockKey, idxStr] = bipolar.dataset.pair.split("|");
+  const idx = +idxStr;
+  const sign = btn.dataset.sign;
+  const n = +btn.dataset.n;
+  const thisId = rKey(blockKey, sign, idx);
+  const otherSign = sign === "+" ? "-" : "+";
+  const otherId = rKey(blockKey, otherSign, idx);
+  const cur = state.responses[thisId]?.score || 0;
+  const other = state.responses[otherId]?.score || 0;
+
+  if (cur === n) {
+    // Click same dot: clear this side.
+    state.responses[thisId] = { ...(state.responses[thisId] || { sign }), score: 0, sign };
+    persistResponse(thisId);
+  } else {
+    state.responses[thisId] = { ...(state.responses[thisId] || { sign }), score: n, sign };
+    persistResponse(thisId);
+    if (other > 0) {
+      // Switching sides: clear the opposite sign's score.
+      state.responses[otherId] = { ...(state.responses[otherId] || { sign: otherSign }), score: 0, sign: otherSign };
+      persistResponse(otherId);
     }
+  }
+  paintPair(blockKey, idx);
+  updateProgress();
+}
+
+function paintPair(blockKey, idx) {
+  const pair = `${blockKey}|${idx}`;
+  const bipolar = document.querySelector(`.bipolar[data-pair="${CSS.escape(pair)}"]`);
+  if (!bipolar) return;
+  const posScore = state.responses[rKey(blockKey, "+", idx)]?.score || 0;
+  const negScore = state.responses[rKey(blockKey, "-", idx)]?.score || 0;
+  bipolar.querySelectorAll("button.dot").forEach(btn => {
+    const n = +btn.dataset.n;
+    const sign = btn.dataset.sign;
+    btn.classList.remove("filled-plus","filled-minus");
+    if (sign === "+" && posScore > 0 && n <= posScore) btn.classList.add("filled-plus");
+    if (sign === "-" && negScore > 0 && n <= negScore) btn.classList.add("filled-minus");
   });
 }
-function onCommentBlur(e) {
+
+// Comments are canonically stored on the "+" row for each pair, so loading /
+// persisting is independent of which side (if any) the respondent picked.
+function onPairCommentBlur(e) {
   if (isSubmitted()) return;
-  const id = e.currentTarget.dataset.id;
-  const txt = e.currentTarget.value;
-  const prev = state.responses[id] || { score: 0, sign: id.split("|")[1] };
+  const ta = e.currentTarget;
+  const [blockKey, idxStr] = ta.dataset.pair.split("|");
+  const idx = +idxStr;
+  const id = rKey(blockKey, "+", idx);
+  const txt = ta.value;
+  const prev = state.responses[id] || { score: 0, sign: "+" };
   if (prev.comment === txt) return;
-  state.responses[id] = { ...prev, comment: txt };
+  state.responses[id] = { ...prev, comment: txt, sign: "+" };
   persistResponse(id);
 }
 
-function totalStatements() {
-  return SWOT.reduce((a,b) => a + b.strengths.en.length + b.weaknesses.en.length, 0);
+function totalPairs() {
+  return SWOT.reduce((a, b) => a + b.strengths.en.length, 0);
 }
-function ratedCount() {
-  return Object.values(state.responses).filter(r => (r.score||0) > 0).length;
+function ratedPairCount() {
+  let n = 0;
+  SWOT.forEach(block => {
+    block.strengths.en.forEach((_, i) => {
+      const p = state.responses[rKey(block.key, "+", i)]?.score || 0;
+      const m = state.responses[rKey(block.key, "-", i)]?.score || 0;
+      if (p > 0 || m > 0) n++;
+    });
+  });
+  return n;
 }
 function updateProgress() {
-  const total = totalStatements();
-  const done  = ratedCount();
+  const total = totalPairs();
+  const done  = ratedPairCount();
   const el = document.getElementById("progressLabel");
   if (el) el.textContent = t("assess.progressRated", { done, total });
   const bar = document.getElementById("progressBar");
@@ -1515,8 +1553,8 @@ async function onDeleteNote(e) {
 /* ---------- 10. SUBMIT / UNSUBMIT ---------- */
 function renderSubmitPanel() {
   const submitted = isSubmitted();
-  const total = totalStatements();
-  const done  = ratedCount();
+  const total = totalPairs();
+  const done  = ratedPairCount();
   const heading = document.getElementById("submitHeading");
   const help    = document.getElementById("submitHelp");
   const submit  = document.getElementById("submitBtn");
@@ -1536,8 +1574,8 @@ function renderSubmitPanel() {
 }
 
 document.getElementById("submitBtn").addEventListener("click", async () => {
-  const total = totalStatements();
-  const done  = ratedCount();
+  const total = totalPairs();
+  const done  = ratedPairCount();
   if (done < total) {
     if (!confirm(t("submit.confirmIncomplete", { done, total }))) return;
   }
@@ -1634,7 +1672,7 @@ async function loadDashboard() {
     state.allRespondents = state.user.name ? [{
       respondent_token: state.token, name: state.user.name, role: state.user.role,
       submitted_at: state.submittedAt,
-      response_count: ratedCount()
+      response_count: ratedPairCount()
     }] : [];
   }
   renderDashboard();
@@ -1666,7 +1704,7 @@ function renderDashboard() {
 }
 
 function renderRespondentsList() {
-  const total = totalStatements();
+  const total = totalPairs();
   document.getElementById("respondentsList").innerHTML = state.allRespondents.length === 0
     ? `<span class="text-slate-400 italic text-sm">${t("dash.noRespondents")}</span>`
     : state.allRespondents.map(r => {
@@ -1692,8 +1730,14 @@ function renderPerBlock(blockStats) {
   blockStats.forEach(({ block, sRows, wRows, sAvg, wAvg }) => {
     const card = document.createElement("div");
     card.className = "block-card bg-white border border-slate-200 rounded-lg p-4";
+    // Group each pair (positive bar above negative bar, with a divider).
+    const pairsHtml = sRows.map((sRow, i) => `
+      <div class="pb-2 mb-2 border-b border-slate-100 last:border-0 last:pb-0 last:mb-0 space-y-1">
+        ${barWithComments(sRow, "+")}
+        ${barWithComments(wRows[i], "-")}
+      </div>`).join("");
     card.innerHTML = `
-      <div class="flex items-center justify-between mb-2">
+      <div class="flex items-center justify-between mb-3">
         <div>
           <div class="text-xs text-slate-500 uppercase tracking-wide">${escapeHtml(tL(block.group))}</div>
           <div class="font-semibold text-lg">${escapeHtml(tL(block.title))}</div>
@@ -1703,40 +1747,52 @@ function renderPerBlock(blockStats) {
           <div>− ${wAvg.toFixed(2)} / 5</div>
         </div>
       </div>
-      <div class="space-y-2 mb-2">${sRows.map(r => barWithComments(r,"+")).join("")}</div>
-      <div class="space-y-2">${wRows.map(r => barWithComments(r,"-")).join("")}</div>`;
+      ${pairsHtml}`;
     container.appendChild(card);
   });
 }
 
+// Pair-level divergence: signed scores (+N if chose strength, −N if chose
+// weakness) combined, then ranked by stdev. Captures disagreement about both
+// direction and magnitude in one number.
 function renderDivergence() {
-  const allRows = SWOT.flatMap(block => {
-    const sArrEn = block.strengths.en;
-    const wArrEn = block.weaknesses.en;
-    return [
-      ...sArrEn.map((_,i)=>({ block, sign:"+", idx:i })),
-      ...wArrEn.map((_,i)=>({ block, sign:"-", idx:i }))
-    ];
-  }).map(r => ({
-    ...r,
-    ...stats(state.allResponses.filter(x => x.block_key===r.block.key && x.statement_sign===r.sign && x.statement_index===r.idx).map(x => x.score).filter(s=>s>0))
-  })).filter(r => r.n >= 2).sort((a,b) => b.stdev - a.stdev).slice(0, 10);
+  const pairs = SWOT.flatMap(block =>
+    block.strengths.en.map((_, idx) => ({ block, idx }))
+  );
+  const rows = pairs.map(p => {
+    const signed = state.allResponses
+      .filter(x => x.block_key === p.block.key && x.statement_index === p.idx && x.score > 0)
+      .map(x => x.statement_sign === "+" ? x.score : -x.score);
+    return { block: p.block, idx: p.idx, ...stats(signed) };
+  }).filter(r => r.n >= 2).sort((a, b) => b.stdev - a.stdev).slice(0, 10);
 
-  document.getElementById("dashDivergence").innerHTML = allRows.length === 0
-    ? `<div class="text-sm text-slate-500 italic">${t("dash.divergenceEmpty")}</div>`
-    : `<table class="w-full text-sm">
-        <thead class="text-xs uppercase text-slate-500">
-          <tr><th class="text-left py-1">${t("dash.divergenceCol.block")}</th><th class="text-left py-1">${t("dash.divergenceCol.statement")}</th><th>${t("dash.divergenceCol.avg")}</th><th>σ</th><th>n</th></tr>
-        </thead>
-        <tbody>${allRows.map(r => `
-          <tr class="border-t">
-            <td class="py-1 text-xs">${escapeHtml(tL(r.block.title))} <span class="chip ${r.sign==='+'?'bg-emerald-100 text-emerald-800':'bg-rose-100 text-rose-800'}">${r.sign}</span></td>
-            <td class="py-1">${escapeHtml(statementText(r.block.key, r.sign, r.idx))}</td>
-            <td class="text-center">${r.mean.toFixed(2)}</td>
-            <td class="text-center font-semibold">${r.stdev.toFixed(2)}</td>
-            <td class="text-center">${r.n}</td>
-          </tr>`).join("")}
-        </tbody></table>`;
+  const el = document.getElementById("dashDivergence");
+  if (rows.length === 0) {
+    el.innerHTML = `<div class="text-sm text-slate-500 italic">${t("dash.divergenceEmpty")}</div>`;
+    return;
+  }
+  el.innerHTML = `
+    <table class="w-full text-sm">
+      <thead class="text-xs uppercase text-slate-500">
+        <tr>
+          <th class="text-left py-1">${t("dash.divergenceCol.block")}</th>
+          <th class="text-left py-1">${t("dash.divergenceCol.statement")}</th>
+          <th>${t("dash.divergenceCol.avg")}</th><th>σ</th><th>n</th>
+        </tr>
+      </thead>
+      <tbody>${rows.map(r => `
+        <tr class="border-t">
+          <td class="py-1 text-xs align-top">${escapeHtml(tL(r.block.title))}</td>
+          <td class="py-1 text-xs">
+            <div class="text-emerald-700">+ ${escapeHtml(statementText(r.block.key, "+", r.idx))}</div>
+            <div class="text-rose-700">− ${escapeHtml(statementText(r.block.key, "-", r.idx))}</div>
+          </td>
+          <td class="text-center align-top">${r.mean >= 0 ? "+" : ""}${r.mean.toFixed(2)}</td>
+          <td class="text-center font-semibold align-top">${r.stdev.toFixed(2)}</td>
+          <td class="text-center align-top">${r.n}</td>
+        </tr>`).join("")}
+      </tbody>
+    </table>`;
 }
 
 function renderExternalAll() {
@@ -1955,7 +2011,8 @@ function exportCsv() {
   const lines = [headerRows.join(",")];
   const rMap = Object.fromEntries(state.allRespondents.map(r => [r.respondent_token, r]));
   const rows = [];
-  state.allResponses.forEach(r => {
+  // Skip stale score=0 rows that remain from a respondent switching sides.
+  state.allResponses.filter(r => (r.score || 0) > 0).forEach(r => {
     const b = swotBlock(r.block_key);
     const meta = rMap[r.respondent_token] || {};
     rows.push([
